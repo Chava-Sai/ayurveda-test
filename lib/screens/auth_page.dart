@@ -20,7 +20,7 @@ class _AuthPageState extends State<AuthPage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 15,
-            vertical: 15,
+            vertical: 25,
           ),
           child: SafeArea(
             child: Column(
