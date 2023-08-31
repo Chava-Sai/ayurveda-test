@@ -11,14 +11,14 @@ class SocialButton extends StatelessWidget {
     Config().init(context);
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
         side: const BorderSide(width: 1, color: Colors.black),
       ),
       onPressed: () {},
       child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             Image.asset(
               'assets/$social.png',
@@ -29,7 +29,7 @@ class SocialButton extends StatelessWidget {
               'Sign in with $social',
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 23,
+                fontSize: 21,
               ),
             ),
           ],
