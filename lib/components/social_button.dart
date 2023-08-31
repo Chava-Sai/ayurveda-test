@@ -28,7 +28,7 @@ class SocialButton extends StatelessWidget {
             Text(
               'Sign in with $social',
               style: const TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 21,
               ),
             ),
