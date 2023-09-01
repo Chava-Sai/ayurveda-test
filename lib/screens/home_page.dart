@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hosp_test/components/appointment_card.dart';
 import 'package:hosp_test/utils/config.dart';
 // import 'package:hosp_test/utils/config.dart';
 
@@ -124,6 +125,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Config.spaceSmall,
+              const AppointmentCard()
             ],
           ),
         ),
