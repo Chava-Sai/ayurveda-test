@@ -23,7 +23,7 @@ class _MainLayoutState extends State<MainLayout> {
             currentPage = value;
           });
         }),
-        children: <Widget>[
+        children: const <Widget>[
           HomePage(),
           AppointmentPage(),
         ],
