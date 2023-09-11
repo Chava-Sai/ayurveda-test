@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hosp_test/components/button.dart';
+// import 'package:hosp_test/main.dart';
+import 'package:hosp_test/models/auth_model.dart';
+import 'package:hosp_test/providers/dio_provider.dart';
+// import 'package:hosp_test/providers/dio_provider.dart';
 import 'package:hosp_test/utils/config.dart';
 import 'package:hosp_test/utils/text.dart';
+import 'package:provider/provider.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -92,6 +97,10 @@ class _LoginFormState extends State<LoginForm> {
             width: double.infinity,
             title: 'Sign In',
             onPressed: () {
+              // final token = await DioProvider()
+              //     .getToken(_emailController.text, _passController.text);
+
+              // print(token);
               Navigator.of(context).pushNamed('main');
             },
             disable: false,
