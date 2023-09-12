@@ -72,7 +72,7 @@ class AboutDoctor extends StatelessWidget {
           ),
           Config.spaceMedium,
           const Text(
-            'Dr Ramesh Babu',
+            'Dr Chandrika',
             style: TextStyle(
                 color: Colors.black,
                 fontSize: 24.0,
