@@ -6,6 +6,7 @@ class AppText {
     'register_text':
         'You can easily sign up, and connect to the Doctors nearby you',
     'signUp_text': 'Don\'t have an account?',
+    'signIn_text_2': 'Already have an account?',
     'social-login': 'OR',
     'forgot-password': 'Forgot Your Password?',
   };

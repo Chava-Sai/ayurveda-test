@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hosp_test/components/button.dart';
-// import 'package:hosp_test/main.dart';
-import 'package:hosp_test/models/auth_model.dart';
-import 'package:hosp_test/providers/dio_provider.dart';
-// import 'package:hosp_test/providers/dio_provider.dart';
+import 'package:hosp_test/screens/home_page.dart';
 import 'package:hosp_test/utils/config.dart';
 import 'package:hosp_test/utils/text.dart';
-import 'package:provider/provider.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -20,6 +17,65 @@ class _LoginFormState extends State<LoginForm> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   bool obsecurePass = true;
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Email validation
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email cannot be empty';
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+    return null;
+  }
+
+  // Password validation
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password cannot be empty';
+    }
+    if (value.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+    return null;
+  }
+
+  // Firebase Login
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passController.text.trim(),
+        );
+
+        print("User logged in: ${userCredential.user!.email}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login Successful!')),
+        );
+
+        // Navigate to Home Page (replace 'HomePage' with your actual home screen)
+       Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+      } on FirebaseAuthException catch (e) {
+        String message = 'Login failed';
+        if (e.code == 'user-not-found') {
+          message = 'No user found for this email.';
+        } else if (e.code == 'wrong-password') {
+          message = 'Incorrect password. Try again.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -38,6 +94,7 @@ class _LoginFormState extends State<LoginForm> {
               prefixIcon: Icon(Icons.email_outlined),
               prefixIconColor: Config.primaryColor,
             ),
+            validator: _validateEmail,
           ),
           Config.spaceSmall,
           TextFormField(
@@ -68,43 +125,17 @@ class _LoginFormState extends State<LoginForm> {
                       ),
               ),
             ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.01,
-          ),
-          Center(
-            child: TextButton(
-              onPressed: () {},
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    AppText.enText['forgot-password']!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            validator: _validatePassword,
           ),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.015,
           ),
           Button(
             width: double.infinity,
-            title: 'Sign In',
-            onPressed: () {
-              // final token = await DioProvider()
-              //     .getToken(_emailController.text, _passController.text);
-
-              // print(token);
-              Navigator.of(context).pushNamed('main');
-            },
+            title: 'Login',
+            onPressed: _login,
             disable: false,
-          )
+          ),
         ],
       ),
     );

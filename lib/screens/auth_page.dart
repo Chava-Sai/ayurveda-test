@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hosp_test/components/login_form.dart';
+import 'package:hosp_test/components/signup_form.dart';
 import 'package:hosp_test/components/social_button.dart';
+import 'package:hosp_test/screens/signup_page.dart';
 import 'package:hosp_test/utils/config.dart';
 import 'package:hosp_test/utils/text.dart';
 
@@ -72,14 +74,29 @@ class _AuthPageState extends State<AuthPage> {
                         color: Colors.grey.shade500,
                       ),
                     ),
-                    const Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
+                    ElevatedButton(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AuthUpPage()), 
+    );
+  },
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Config.primaryColor, // Button color
+    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+    ),
+  ),
+  child: const Text(
+    'Sign Up',
+    style: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+      color: Colors.white, // White for contrast
+    ),
+  ),
+)
                   ],
                 ),
               ],

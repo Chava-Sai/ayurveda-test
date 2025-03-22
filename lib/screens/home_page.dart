@@ -1,14 +1,8 @@
-import 'dart:convert';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hosp_test/components/appointment_card.dart';
 import 'package:hosp_test/components/doctor_card.dart';
-import 'package:hosp_test/providers/dio_provider.dart';
 import 'package:hosp_test/utils/config.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:hosp_test/utils/config.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -45,21 +39,6 @@ class _HomePageState extends State<HomePage> {
       "category": "Dental",
     },
   ];
-
-  Future<void> getData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-
-    if (token.isNotEmpty && token != '') {
-      final response = await DioProvider().getUser(token);
-      if (response != null) {
-        setState(() {
-          user = json.decode(response);
-          print(user);
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
