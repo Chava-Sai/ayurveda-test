@@ -18,7 +18,7 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
-  String? _selectedRole; // To store user selection (Customer or Doctor)
+  String? _selectedRole; // Store selected role
   bool obsecurePass = true;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -51,11 +51,12 @@ class _LoginFormState extends State<LoginForm> {
             return;
           }
 
-          // Fetch user role from Firestore
+          // Fetch user role & status from Firestore
           DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
 
           if (userDoc.exists) {
             String storedRole = userDoc['role'] ?? 'Customer';
+            String status = userDoc['status'] ?? 'pending';
 
             if (_selectedRole != storedRole) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -64,16 +65,25 @@ class _LoginFormState extends State<LoginForm> {
               return;
             }
 
+            // If user is a doctor, check if they are approved
+            if (storedRole == 'Doctor' && status != 'approved') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Your profile is under review. Please wait for admin approval.')),
+              );
+              await _auth.signOut();
+              return;
+            }
+
             // Navigate based on role
             if (storedRole == 'Doctor') {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => AppointmentBooked()),
+                MaterialPageRoute(builder: (context) => const AppointmentBooked()),
               );
             } else {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage()),
+                MaterialPageRoute(builder: (context) => const HomePage()),
               );
             }
           } else {
@@ -100,6 +110,7 @@ class _LoginFormState extends State<LoginForm> {
       key: _formKey,
       child: Column(
         children: <Widget>[
+          // Dropdown for selecting user type
           DropdownButtonFormField<String>(
             value: _selectedRole,
             decoration: const InputDecoration(labelText: 'Login As'),
@@ -110,6 +121,8 @@ class _LoginFormState extends State<LoginForm> {
             validator: (value) => value == null ? 'Please select a role' : null,
           ),
           Config.spaceMedium,
+
+          // Email Field
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -124,6 +137,8 @@ class _LoginFormState extends State<LoginForm> {
             validator: (value) => value!.isEmpty ? 'Enter a valid email' : null,
           ),
           Config.spaceMedium,
+
+          // Password Field
           TextFormField(
             controller: _passController,
             obscureText: obsecurePass,
@@ -148,6 +163,8 @@ class _LoginFormState extends State<LoginForm> {
             validator: (value) => value!.isEmpty ? 'Enter a valid password' : null,
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.015),
+
+          // Login Button
           Button(width: double.infinity, title: 'Login', onPressed: _login, disable: false),
         ],
       ),
