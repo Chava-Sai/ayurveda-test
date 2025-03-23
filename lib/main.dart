@@ -4,6 +4,7 @@ import 'package:hosp_test/main_layout.dart';
 import 'package:hosp_test/screens/auth_page.dart';
 import 'package:hosp_test/screens/booking_page.dart';
 import 'package:hosp_test/screens/dotor_details.dart';
+import 'package:hosp_test/screens/email_link.dart';
 import 'package:hosp_test/screens/success_booked.dart';
 import 'package:hosp_test/utils/config.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -56,6 +57,7 @@ class MainApp extends StatelessWidget {
         'doc_details': (context) => const DoctorDetails(),
         'booking_page': (context) => const BookingPage(),
         'success_booking': (context) => const AppointmentBooked(),
+        'email_sent': (context) => const EmailSent(),
       },
     );
   }

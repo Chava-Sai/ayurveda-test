@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Config.spaceSmall,
                 SizedBox(
-                  height: Config.heightSize * 0.05,
+                  height: Config.heightSize! * 0.05,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: List<Widget>.generate(medCat.length, (index) {
