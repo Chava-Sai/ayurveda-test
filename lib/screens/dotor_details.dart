@@ -80,7 +80,7 @@ class AboutDoctor extends StatelessWidget {
           ),
           Config.spaceSmall,
           SizedBox(
-            width: Config.widthSize! * 0.75,
+            width: MediaQuery.of(context).size.height * 0.5,
             child: const Text(
               'MBBS, MD, DM, FSCAI',
               style: TextStyle(
@@ -93,7 +93,7 @@ class AboutDoctor extends StatelessWidget {
           ),
           Config.spaceSmall,
           SizedBox(
-            width: Config.widthSize! * 0.75,
+            width: MediaQuery.of(context).size.height * 0.5,
             child: const Text(
               'Aster Ramesh Hospitals , Vijayawada',
               style: TextStyle(

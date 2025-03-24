@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hosp_test/components/button.dart';
+import 'package:hosp_test/screens/email_link.dart';
 import 'package:hosp_test/utils/config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -74,9 +75,10 @@ class _SignUpFormState extends State<SignUpForm> {
         if (user != null) {
           // Send verification email
           await user.sendEmailVerification();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Verification email sent. Please verify before logging in.')),
-          );
+          Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => const EmailSent()),
+);
 
           // **Upload Files & Get URLs**
           String? aadharUrl, certificateUrl;
@@ -88,22 +90,22 @@ class _SignUpFormState extends State<SignUpForm> {
           }
 
           // **Store User Details in Firestore**
-          await _firestore.collection('users').doc(user.uid).set({
-            'uid': user.uid,
-            'email': _emailController.text.trim(),
-            'phone': _phoneController.text.trim(),
-            'role': _selectedRole ?? 'Customer',
-            'createdAt': FieldValue.serverTimestamp(),
-            if (_selectedRole == 'Doctor') ...{
-              'experience': _experienceController.text.trim(),
-              'specialization': _specializationController.text.trim(),
-              'clinicAddress': _clinicAddressController.text.trim(),
-              'registrationNumber': _registrationNumberController.text.trim(),
-              'aadharUrl': aadharUrl, // Store Aadhar URL
-              'certificateUrl': certificateUrl, // Store Certificate URL
-              'status': 'pending' // Doctor verification pending
-            }
-          });
+        await _firestore.collection('users').doc(user.uid).set({
+  'uid': user.uid,
+  'email': _emailController.text.trim(),
+  'phone': _phoneController.text.trim(),
+  'role': _selectedRole ?? 'Customer',
+  'createdAt': FieldValue.serverTimestamp(),
+  'status': _selectedRole == 'Doctor' ? 'pending' : 'approved', // Default status
+  if (_selectedRole == 'Doctor') ...{
+    'experience': _experienceController.text.trim(),
+    'specialization': _specializationController.text.trim(),
+    'clinicAddress': _clinicAddressController.text.trim(),
+    'registrationNumber': _registrationNumberController.text.trim(),
+    'aadharUrl': aadharUrl, // Store Aadhar URL
+    'certificateUrl': certificateUrl, // Store Certificate URL
+  }
+});
 
           await _auth.signOut();
         }
