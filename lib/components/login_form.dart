@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hosp_test/components/button.dart';
+import 'package:hosp_test/screens/forgot_password.dart';
 import 'package:hosp_test/screens/home_page.dart';
 import 'package:hosp_test/screens/doctor_dashboard.dart';
-import 'package:hosp_test/screens/success_booked.dart';
+import 'package:hosp_test/screens/success_booked.dart'; // Import ResetScreen
 import 'package:hosp_test/utils/config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -120,7 +121,7 @@ class _LoginFormState extends State<LoginForm> {
             onChanged: (value) => setState(() => _selectedRole = value!),
             validator: (value) => value == null ? 'Please select a role' : null,
           ),
-          Config.spaceMedium,
+          SizedBox(height: MediaQuery.of(context).size.height * 0.045),
 
           // Email Field
           TextFormField(
@@ -136,7 +137,7 @@ class _LoginFormState extends State<LoginForm> {
             ),
             validator: (value) => value!.isEmpty ? 'Enter a valid email' : null,
           ),
-          Config.spaceMedium,
+         SizedBox(height: MediaQuery.of(context).size.height * 0.045),
 
           // Password Field
           TextFormField(
@@ -162,7 +163,29 @@ class _LoginFormState extends State<LoginForm> {
             ),
             validator: (value) => value!.isEmpty ? 'Enter a valid password' : null,
           ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.015),
+
+          // Forgot Password Button
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ResetScreen()),
+                );
+              },
+              child: const Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(height: MediaQuery.of(context).size.height * 0.025),
 
           // Login Button
           Button(width: double.infinity, title: 'Login', onPressed: _login, disable: false),

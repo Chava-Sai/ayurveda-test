@@ -166,7 +166,7 @@ class _SignUpFormState extends State<SignUpForm> {
             Config.spaceMedium,
           ],
           TextFormField(controller: _passController, obscureText: obsecurePass, decoration: InputDecoration(labelText: 'Password', suffixIcon: IconButton(onPressed: () => setState(() => obsecurePass = !obsecurePass), icon: Icon(obsecurePass ? Icons.visibility_off : Icons.visibility)))),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.065),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.045),
           Button(width: double.infinity, title: 'Sign Up', onPressed: _signUp, disable: false),
         ],
       ),
