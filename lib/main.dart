@@ -13,9 +13,9 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
-runApp(const MainApp());
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MainApp());
 }
 
 class MainApp extends StatelessWidget {
@@ -58,6 +58,7 @@ class MainApp extends StatelessWidget {
         'booking_page': (context) => const BookingPage(),
         'success_booking': (context) => const AppointmentBooked(),
         'email_sent': (context) => const EmailSent(),
+        'login': (context) => const AuthPage(),
       },
     );
   }

@@ -19,7 +19,8 @@ class _AuthUpPageState extends State<AuthUpPage> {
     //Config.init(context);
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus(); // Dismiss keyboard when tapping outside
+        FocusScope.of(context)
+            .unfocus(); // Dismiss keyboard when tapping outside
       },
       child: Scaffold(
         body: SingleChildScrollView(
@@ -50,7 +51,6 @@ class _AuthUpPageState extends State<AuthUpPage> {
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.045),
                   const SignUpForm(),
-                 
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.04,
                   ),
@@ -66,21 +66,21 @@ class _AuthUpPageState extends State<AuthUpPage> {
                         ),
                       ),
                       TextButton(
-        onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => AuthPage()),
-      );
-        },
-        child: const Text(
-      'Sign In',
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: Colors.blue, // Adjust color as needed
-      ),
-        ),
-      )
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => AuthPage()),
+                          );
+                        },
+                        child: const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue, // Adjust color as needed
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ],

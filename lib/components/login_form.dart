@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hosp_test/components/button.dart';
+import 'package:hosp_test/doctor_main_layout.dart';
+import 'package:hosp_test/main_layout.dart';
+import 'package:hosp_test/screens/doctor_home_page.dart';
 import 'package:hosp_test/screens/forgot_password.dart';
-import 'package:hosp_test/screens/home_page.dart';
-import 'package:hosp_test/screens/doctor_dashboard.dart';
+import 'package:hosp_test/screens/user_home_page.dart';
 import 'package:hosp_test/screens/success_booked.dart'; // Import ResetScreen
 import 'package:hosp_test/utils/config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,11 +28,13 @@ class _LoginFormState extends State<LoginForm> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Firebase Login with Role-Based Navigation
+  // Firebase Login with Role-Based Navigation
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedRole == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a role: Doctor or Customer')),
+          const SnackBar(
+              content: Text('Please select a role: Doctor or Customer')),
         );
         return;
       }
@@ -44,16 +48,24 @@ class _LoginFormState extends State<LoginForm> {
         User? user = userCredential.user;
 
         if (user != null) {
-          if (!user.emailVerified) {
+          await user.reload();
+          user = _auth.currentUser; // Fetch the latest user state
+
+          if (!user!.emailVerified) {
             await _auth.signOut();
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Please verify your email before logging in.')),
+              const SnackBar(
+                  content: Text('Please verify your email before logging in.')),
             );
             return;
           }
 
-          // Fetch user role & status from Firestore
-          DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+          // ✅ Determine the correct collection based on role
+          String collection = _selectedRole == "Doctor" ? "doctors" : "users";
+
+          // ✅ Fetch user data from the correct collection
+          DocumentSnapshot userDoc =
+              await _firestore.collection(collection).doc(user.uid).get();
 
           if (userDoc.exists) {
             String storedRole = userDoc['role'] ?? 'Customer';
@@ -61,35 +73,42 @@ class _LoginFormState extends State<LoginForm> {
 
             if (_selectedRole != storedRole) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Incorrect role selected. Please try again.')),
+                const SnackBar(
+                    content:
+                        Text('Incorrect role selected. Please try again.')),
               );
               return;
             }
 
-            // If user is a doctor, check if they are approved
+            // ✅ If user is a doctor, check approval status
             if (storedRole == 'Doctor' && status != 'approved') {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Your profile is under review. Please wait for admin approval.')),
+                const SnackBar(
+                    content: Text(
+                        'Your profile is under review. Please wait for admin approval.')),
               );
               await _auth.signOut();
               return;
             }
 
-            // Navigate based on role
+            // ✅ Navigate to the correct dashboard
             if (storedRole == 'Doctor') {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const AppointmentBooked()),
+                MaterialPageRoute(
+                    builder: (context) => const doctorMainLayout()),
               );
             } else {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
+                MaterialPageRoute(builder: (context) => const MainLayout()),
               );
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User data not found. Please contact support.')),
+              const SnackBar(
+                  content:
+                      Text('User data not found. Please contact support.')),
             );
           }
         }
@@ -100,7 +119,8 @@ class _LoginFormState extends State<LoginForm> {
         } else if (e.code == 'wrong-password') {
           message = 'Incorrect password. Try again.';
         }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
       }
     }
   }
@@ -137,7 +157,7 @@ class _LoginFormState extends State<LoginForm> {
             ),
             validator: (value) => value!.isEmpty ? 'Enter a valid email' : null,
           ),
-         SizedBox(height: MediaQuery.of(context).size.height * 0.045),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.045),
 
           // Password Field
           TextFormField(
@@ -157,11 +177,14 @@ class _LoginFormState extends State<LoginForm> {
                   });
                 },
                 icon: obsecurePass
-                    ? const Icon(Icons.visibility_off_outlined, color: Colors.black38)
-                    : const Icon(Icons.visibility_outlined, color: Config.primaryColor),
+                    ? const Icon(Icons.visibility_off_outlined,
+                        color: Colors.black38)
+                    : const Icon(Icons.visibility_outlined,
+                        color: Config.primaryColor),
               ),
             ),
-            validator: (value) => value!.isEmpty ? 'Enter a valid password' : null,
+            validator: (value) =>
+                value!.isEmpty ? 'Enter a valid password' : null,
           ),
 
           // Forgot Password Button
@@ -188,7 +211,11 @@ class _LoginFormState extends State<LoginForm> {
           SizedBox(height: MediaQuery.of(context).size.height * 0.025),
 
           // Login Button
-          Button(width: double.infinity, title: 'Login', onPressed: _login, disable: false),
+          Button(
+              width: double.infinity,
+              title: 'Login',
+              onPressed: _login,
+              disable: false),
         ],
       ),
     );

@@ -39,7 +39,7 @@ class _DoctorDetailsState extends State<DoctorDetails> {
             const AboutDoctor(),
             const DetailBody(),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.only(top: 1, left: 20, right: 20),
               child: Button(
                 width: double.infinity,
                 title: 'Book Appointment',
@@ -72,7 +72,7 @@ class AboutDoctor extends StatelessWidget {
           ),
           Config.spaceMedium,
           const Text(
-            'Dr Ramesh Babu',
+            'Dr Sai',
             style: TextStyle(
                 color: Colors.black,
                 fontSize: 24.0,
@@ -122,9 +122,13 @@ class DetailBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Config.spaceSmall,
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.02,
+          ),
           const DoctorInfo(),
-          Config.spaceMedium,
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.03,
+          ),
           const Text(
             'About Doctor',
             style: TextStyle(
@@ -132,7 +136,9 @@ class DetailBody extends StatelessWidget {
               fontSize: 18,
             ),
           ),
-          Config.spaceSmall,
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.02,
+          ),
           const Text(
             'Dr. P Ramesh Babu is the Chief Cardiologist and Managing Director of Ramesh Hospitals. He completed his MBBS from Guntur Medical College and pursued his MD and DM at the prestigious All India Institute of Medical Sciences, New Delhi.',
             style: TextStyle(

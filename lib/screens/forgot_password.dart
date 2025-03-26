@@ -26,10 +26,9 @@ class _ResetScreenState extends State<ResetScreen> {
         context,
         MaterialPageRoute(builder: (context) => VerificationSent()),
       );
-      
     } on FirebaseAuthException catch (e) {
       String errorMessage = "An error occurred. Please try again.";
-      
+
       if (e.code == 'user-not-found') {
         errorMessage = "This email is not registered. Please sign up first.";
       } else if (e.code == 'invalid-email') {
@@ -71,7 +70,7 @@ class _ResetScreenState extends State<ResetScreen> {
                 style: TextStyle(color: Color(0xFF8391A1), fontSize: 16),
               ),
               const SizedBox(height: 20),
-              
+
               Form(
                 key: _formKey,
                 child: TextFormField(
@@ -90,7 +89,8 @@ class _ResetScreenState extends State<ResetScreen> {
                     if (value == null || value.isEmpty) {
                       return "Please enter your email";
                     }
-                    if (!RegExp(r"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$").hasMatch(value)) {
+                    if (!RegExp(r"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$")
+                        .hasMatch(value)) {
                       return "Enter a valid email";
                     }
                     return null;
@@ -125,17 +125,22 @@ class _ResetScreenState extends State<ResetScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Remember Password?", style: TextStyle(fontSize: 16)),
+                  const Text("Remember Password?",
+                      style: TextStyle(fontSize: 16)),
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const AuthPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const AuthPage()),
                       );
                     },
                     child: const Text(
                       "Login",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.indigo),
                     ),
                   ),
                 ],

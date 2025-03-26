@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hosp_test/screens/appointment_page.dart';
-import 'package:hosp_test/screens/home_page.dart';
+import 'package:hosp_test/screens/user_home_page.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -24,7 +24,7 @@ class _MainLayoutState extends State<MainLayout> {
           });
         }),
         children: const <Widget>[
-          HomePage(),
+          UserHomePage(),
           AppointmentPage(),
         ],
       ),

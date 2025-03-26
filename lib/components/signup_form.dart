@@ -19,6 +19,7 @@ class SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<SignUpForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passController = TextEditingController();
   final _experienceController = TextEditingController();
@@ -27,6 +28,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final _registrationNumberController = TextEditingController();
   bool obsecurePass = true;
   String? _selectedRole;
+  File? _profileImage;
   File? _aadharImage;
   File? _certificatePdf;
 
@@ -34,23 +36,34 @@ class _SignUpFormState extends State<SignUpForm> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // Pick Aadhar Image
+  // 📷 Pick Profile Image
+  Future<void> _pickProfileImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() => _profileImage = File(pickedFile.path));
+    }
+  }
+
+  // 🆔 Pick Aadhar Image
   Future<void> _pickAadharImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() => _aadharImage = File(pickedFile.path));
     }
   }
 
-  // Pick Certificate PDF
+  // 📜 Pick Certificate PDF
   Future<void> _pickCertificatePdf() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+    FilePickerResult? result = await FilePicker.platform
+        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     if (result != null && result.files.single.path != null) {
       setState(() => _certificatePdf = File(result.files.single.path!));
     }
   }
 
-  // Upload File to Firebase Storage
+  // ⬆️ Upload File to Firebase Storage
   Future<String?> _uploadFile(File file, String path) async {
     try {
       TaskSnapshot snapshot = await _storage.ref(path).putFile(file);
@@ -61,11 +74,12 @@ class _SignUpFormState extends State<SignUpForm> {
     }
   }
 
-  // Firebase Sign-Up with Email Verification & File Upload
+  // 🔐 Firebase Sign-Up with File Upload
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passController.text.trim(),
         );
@@ -73,44 +87,59 @@ class _SignUpFormState extends State<SignUpForm> {
         User? user = userCredential.user;
 
         if (user != null) {
-          // Send verification email
           await user.sendEmailVerification();
-          Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(builder: (context) => const EmailSent()),
-);
 
-          // **Upload Files & Get URLs**
-          String? aadharUrl, certificateUrl;
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const EmailSent()),
+            );
+          }
+
+          String? profileUrl, aadharUrl, certificateUrl;
+          if (_profileImage != null) {
+            profileUrl = await _uploadFile(
+                _profileImage!, "${_selectedRole}/${user.uid}/profile.jpg");
+          }
           if (_aadharImage != null) {
-            aadharUrl = await _uploadFile(_aadharImage!, "users/${user.uid}/aadhar.jpg");
+            aadharUrl = await _uploadFile(
+                _aadharImage!, "${_selectedRole}/${user.uid}/aadhar.jpg");
           }
           if (_certificatePdf != null) {
-            certificateUrl = await _uploadFile(_certificatePdf!, "users/${user.uid}/certificate.pdf");
+            certificateUrl = await _uploadFile(_certificatePdf!,
+                "${_selectedRole}/${user.uid}/certificate.pdf");
           }
 
-          // **Store User Details in Firestore**
-        await _firestore.collection('users').doc(user.uid).set({
-  'uid': user.uid,
-  'email': _emailController.text.trim(),
-  'phone': _phoneController.text.trim(),
-  'role': _selectedRole ?? 'Customer',
-  'createdAt': FieldValue.serverTimestamp(),
-  'status': _selectedRole == 'Doctor' ? 'pending' : 'approved', // Default status
-  if (_selectedRole == 'Doctor') ...{
-    'experience': _experienceController.text.trim(),
-    'specialization': _specializationController.text.trim(),
-    'clinicAddress': _clinicAddressController.text.trim(),
-    'registrationNumber': _registrationNumberController.text.trim(),
-    'aadharUrl': aadharUrl, // Store Aadhar URL
-    'certificateUrl': certificateUrl, // Store Certificate URL
-  }
-});
+          String collection = _selectedRole == "Doctor" ? "doctors" : "users";
+
+          await _firestore.collection(collection).doc(user.uid).set({
+            'uid': user.uid,
+            'email': _emailController.text.trim(),
+            'name': _nameController.text.trim(),
+            'phone': _phoneController.text.trim(),
+            'role': _selectedRole,
+            'profileUrl': profileUrl,
+            'createdAt': FieldValue.serverTimestamp(),
+            'emailVerified': user.emailVerified,
+            'status': _selectedRole == 'Doctor' ? 'pending' : 'approved',
+            if (_selectedRole == 'Doctor') ...{
+              'experience': _experienceController.text.trim(),
+              'specialization': _specializationController.text.trim(),
+              'clinicAddress': _clinicAddressController.text.trim(),
+              'registrationNumber': _registrationNumberController.text.trim(),
+              'aadharUrl': aadharUrl,
+              'certificateUrl': certificateUrl,
+            }
+          });
 
           await _auth.signOut();
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.toString()}')),
+          );
+        }
       }
     }
   }
@@ -131,45 +160,123 @@ class _SignUpFormState extends State<SignUpForm> {
             validator: (value) => value == null ? 'Please select a role' : null,
           ),
           Config.spaceMedium,
-          TextFormField(controller: _emailController, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email'), validator: (value) => value!.isEmpty ? 'Enter a valid email' : null),
+
+          /// 🔄 Profile Image Picker
+          Row(
+            children: [
+              /// 🔄 Profile Image Picker
+              SizedBox(
+                width: MediaQuery.of(context).size.width *
+                    0.86, // Ensures valid width
+                child: ElevatedButton.icon(
+                  onPressed: _pickProfileImage,
+                  icon: const Icon(Icons.image),
+                  label: const Text("Upload Profile Photo"),
+                ),
+              ),
+              if (_profileImage != null)
+                const Icon(Icons.check_circle, color: Colors.green),
+            ],
+          ),
           Config.spaceMedium,
-          TextFormField(controller: _phoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone'), validator: (value) => value!.isEmpty ? 'Enter a valid phone number' : null),
+
+          TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
+              validator: (value) =>
+                  value!.isEmpty ? 'Enter a valid email' : null),
           Config.spaceMedium,
+          TextFormField(
+              controller: _nameController,
+              keyboardType: TextInputType.name,
+              decoration: const InputDecoration(labelText: 'Name'),
+              validator: (value) =>
+                  value!.isEmpty ? 'Enter a valid name' : null),
+          Config.spaceMedium,
+          TextFormField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'Phone'),
+              validator: (value) =>
+                  value!.isEmpty ? 'Enter a valid phone number' : null),
+          Config.spaceMedium,
+
           if (_selectedRole == 'Doctor') ...[
-            TextFormField(controller: _experienceController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Experience (Years)')),
+            TextFormField(
+                controller: _experienceController,
+                keyboardType: TextInputType.number,
+                decoration:
+                    const InputDecoration(labelText: 'Experience (Years)')),
             Config.spaceMedium,
-            TextFormField(controller: _specializationController, decoration: const InputDecoration(labelText: 'Specialization')),
+            TextFormField(
+                controller: _specializationController,
+                decoration: const InputDecoration(labelText: 'Specialization')),
             Config.spaceMedium,
-            TextFormField(controller: _clinicAddressController, decoration: const InputDecoration(labelText: 'Clinic Address')),
+            TextFormField(
+                controller: _clinicAddressController,
+                decoration: const InputDecoration(labelText: 'Clinic Address')),
             Config.spaceMedium,
-            TextFormField(controller: _registrationNumberController, decoration: const InputDecoration(labelText: 'Medical Registration Number')),
+            TextFormField(
+                controller: _registrationNumberController,
+                decoration: const InputDecoration(
+                    labelText: 'Medical Registration Number')),
             Config.spaceMedium,
             Row(
               children: [
-                ElevatedButton.icon(
-                  onPressed: _pickAadharImage,
-                  icon: const Icon(Icons.image),
-                  label: const Text("Upload Aadhar"),
+                /// 🔄 Aadhar Image Picker
+                SizedBox(
+                  width: MediaQuery.of(context).size.width *
+                      0.86, // Ensures valid width
+                  height: MediaQuery.of(context).size.height * 0.06,
+                  child: ElevatedButton.icon(
+                    onPressed: _pickAadharImage,
+                    icon: const Icon(Icons.image),
+                    label: const Text("Upload Aadhar"),
+                  ),
                 ),
-                if (_aadharImage != null) const Icon(Icons.check_circle, color: Colors.green),
+                if (_aadharImage != null)
+                  const Icon(Icons.check_circle, color: Colors.green),
               ],
             ),
             Config.spaceMedium,
             Row(
               children: [
-                ElevatedButton.icon(
-                  onPressed: _pickCertificatePdf,
-                  icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text("Upload Certificate"),
+                /// 📜 Certificate PDF Picker
+                SizedBox(
+                  width: MediaQuery.of(context).size.width *
+                      0.86, // Ensures valid width
+                  height: MediaQuery.of(context).size.height * 0.06,
+                  child: ElevatedButton.icon(
+                    onPressed: _pickCertificatePdf,
+                    icon: const Icon(Icons.picture_as_pdf),
+                    label: const Text("Upload Certificate"),
+                  ),
                 ),
-                if (_certificatePdf != null) const Icon(Icons.check_circle, color: Colors.green),
+                if (_certificatePdf != null)
+                  const Icon(Icons.check_circle, color: Colors.green),
               ],
             ),
             Config.spaceMedium,
           ],
-          TextFormField(controller: _passController, obscureText: obsecurePass, decoration: InputDecoration(labelText: 'Password', suffixIcon: IconButton(onPressed: () => setState(() => obsecurePass = !obsecurePass), icon: Icon(obsecurePass ? Icons.visibility_off : Icons.visibility)))),
+
+          TextFormField(
+              controller: _passController,
+              obscureText: obsecurePass,
+              decoration: InputDecoration(
+                  labelText: 'Password',
+                  suffixIcon: IconButton(
+                      onPressed: () =>
+                          setState(() => obsecurePass = !obsecurePass),
+                      icon: Icon(obsecurePass
+                          ? Icons.visibility_off
+                          : Icons.visibility)))),
           SizedBox(height: MediaQuery.of(context).size.height * 0.045),
-          Button(width: double.infinity, title: 'Sign Up', onPressed: _signUp, disable: false),
+          Button(
+              width: double.infinity,
+              title: 'Sign Up',
+              onPressed: _signUp,
+              disable: false),
         ],
       ),
     );

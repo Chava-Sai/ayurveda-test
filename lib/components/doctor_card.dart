@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:hosp_test/utils/config.dart';
 
 class DoctorCard extends StatelessWidget {
-  const DoctorCard({Key? key, required this.route}) : super(key: key);
+  const DoctorCard({
+    Key? key,
+    required this.doctorId,
+    required this.name,
+    required this.specialization,
+    required this.address,
+    required this.registrationNumber,
+    required this.profileUrl, // ✅ Add profileUrl
+    required this.route,
+  }) : super(key: key);
 
+  final String doctorId;
+  final String name;
+  final String specialization;
+  final String address;
+  final String registrationNumber;
+  final String profileUrl; // ✅ New field
   final String route;
 
   @override
@@ -19,14 +33,22 @@ class DoctorCard extends StatelessWidget {
             children: [
               SizedBox(
                 width: MediaQuery.of(context).size.height * 0.15,
-                child: Image.asset(
-                  'assets/doctor1.jpeg',
-                  fit: BoxFit.fitWidth,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: profileUrl.isNotEmpty // ✅ Check if profileUrl is valid
+                      ? Image.network(
+                          profileUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset('assets/doctor1.jpeg');
+                          },
+                        )
+                      : Image.asset('assets/doctor1.jpeg'), // Placeholder
                 ),
               ),
-              const Flexible(
+              Flexible(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 20,
                   ),
@@ -34,50 +56,29 @@ class DoctorCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        'Dr Ramesh Babu',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        'Dr. $name',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
-                        'Cardiology',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.normal),
+                        specialization,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
-                      Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Icon(
-                            Icons.star_border,
-                            color: Colors.yellow,
-                            size: 16,
-                          ),
-                          Spacer(
-                            flex: 1,
-                          ),
-                          Text('4.7'),
-                          Spacer(
-                            flex: 1,
-                          ),
-                          Text('Reviwes'),
-                          Spacer(
-                            flex: 1,
-                          ),
-                          Text('(20)'),
-                          Spacer(
-                            flex: 7,
-                          )
-                        ],
-                      )
+                      const Spacer(),
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
         onTap: () {
-          Navigator.of(context).pushNamed(route);
+          Navigator.of(context).pushNamed(route, arguments: doctorId);
         },
       ),
     );
