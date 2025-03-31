@@ -41,7 +41,7 @@ class _HomePageState extends State<UserHomePage> {
           .collection('doctors')
           .where('role', isEqualTo: 'Doctor')
           .where('status', isEqualTo: 'approved')
-          .where('emailVerified', isEqualTo: true)
+          // .where('emailVerified', isEqualTo: true)
           .get();
 
       return querySnapshot.docs.map((doc) {

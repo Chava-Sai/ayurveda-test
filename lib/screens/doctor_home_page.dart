@@ -42,7 +42,7 @@ class _HomePageState extends State<doctorHomePage> {
           .collection('doctors')
           .where('role', isEqualTo: 'Doctor')
           .where('status', isEqualTo: 'approved')
-          .where('emailVerified', isEqualTo: true)
+          // .where('emailVerified', isEqualTo: true)
           .get();
 
       return querySnapshot.docs.map((doc) {
@@ -192,7 +192,7 @@ class _HomePageState extends State<doctorHomePage> {
                                 );
                               }
                               return Text(
-                                snapshot.data?["name"] ?? "User",
+                                "Dr.${snapshot.data?["name"] ?? "User"}!",
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,

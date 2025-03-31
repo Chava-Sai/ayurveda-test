@@ -13,6 +13,22 @@ class DoctorDetails extends StatefulWidget {
 
 class _DoctorDetailsState extends State<DoctorDetails> {
   bool isFav = false;
+
+  late String name;
+  late String experience;
+  late String profileUrl;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Extract arguments passed from DoctorCard
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+    name = args['name']!;
+    experience = args['experience']!;
+    profileUrl = args['profileUrl']!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,8 +52,11 @@ class _DoctorDetailsState extends State<DoctorDetails> {
       body: SafeArea(
         child: ListView(
           children: <Widget>[
-            const AboutDoctor(),
-            const DetailBody(),
+            AboutDoctor(
+              name: name,
+              profileUrl: profileUrl,
+            ),
+            DetailBody(experience: experience),
             Padding(
               padding: const EdgeInsets.only(top: 1, left: 20, right: 20),
               child: Button(
@@ -57,7 +76,10 @@ class _DoctorDetailsState extends State<DoctorDetails> {
 }
 
 class AboutDoctor extends StatelessWidget {
-  const AboutDoctor({super.key});
+  final String name;
+  final String profileUrl;
+
+  const AboutDoctor({super.key, required this.name, required this.profileUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -65,15 +87,15 @@ class AboutDoctor extends StatelessWidget {
       width: double.infinity,
       child: Column(
         children: <Widget>[
-          const CircleAvatar(
+          CircleAvatar(
             radius: 65.0,
-            backgroundImage: AssetImage('assets/doctor1.jpeg'),
+            backgroundImage: NetworkImage(profileUrl),
             backgroundColor: Colors.white,
           ),
           Config.spaceMedium,
-          const Text(
-            'Dr Sai',
-            style: TextStyle(
+          Text(
+            'Dr. $name',
+            style: const TextStyle(
                 color: Colors.black,
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold),
@@ -94,17 +116,17 @@ class AboutDoctor extends StatelessWidget {
           Config.spaceSmall,
           SizedBox(
             width: MediaQuery.of(context).size.height * 0.5,
-            child: const Text(
-              'Aster Ramesh Hospitals , Vijayawada',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-              softWrap: true,
-              textAlign: TextAlign.center,
-            ),
+            // child: Text(
+            //   'Experience: '15', // Display the passed experience
+            //   style: const TextStyle(
+            //     color: Colors.grey,
+            //     fontSize: 15,
+            //   ),
+            //   softWrap: true,
+            //   textAlign: TextAlign.center,
+            // ),
           ),
+          Config.spaceSmall,
         ],
       ),
     );
@@ -112,7 +134,9 @@ class AboutDoctor extends StatelessWidget {
 }
 
 class DetailBody extends StatelessWidget {
-  const DetailBody({super.key});
+  final String experience;
+
+  const DetailBody({super.key, required this.experience});
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +163,9 @@ class DetailBody extends StatelessWidget {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.02,
           ),
-          const Text(
-            'Dr. P Ramesh Babu is the Chief Cardiologist and Managing Director of Ramesh Hospitals. He completed his MBBS from Guntur Medical College and pursued his MD and DM at the prestigious All India Institute of Medical Sciences, New Delhi.',
-            style: TextStyle(
+          Text(
+            'Experience: $experience', // Display the passed experience here
+            style: const TextStyle(
               fontWeight: FontWeight.w500,
               height: 1.5,
             ),

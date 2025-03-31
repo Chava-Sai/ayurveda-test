@@ -46,10 +46,9 @@ class _LoginFormState extends State<LoginForm> {
         );
 
         User? user = userCredential.user;
-
         if (user != null) {
           await user.reload();
-          user = _auth.currentUser; // Fetch the latest user state
+          user = _auth.currentUser;
 
           if (!user!.emailVerified) {
             await _auth.signOut();
@@ -60,55 +59,67 @@ class _LoginFormState extends State<LoginForm> {
             return;
           }
 
-          // ✅ Determine the correct collection based on role
-          String collection = _selectedRole == "Doctor" ? "doctors" : "users";
+          // ✅ Check both "users" and "doctors" collections
+          DocumentSnapshot? userDoc;
+          String? actualRole;
+          String? status;
 
-          // ✅ Fetch user data from the correct collection
-          DocumentSnapshot userDoc =
-              await _firestore.collection(collection).doc(user.uid).get();
+          DocumentSnapshot usersDoc =
+              await _firestore.collection("users").doc(user.uid).get();
+          DocumentSnapshot doctorsDoc =
+              await _firestore.collection("doctors").doc(user.uid).get();
 
-          if (userDoc.exists) {
-            String storedRole = userDoc['role'] ?? 'Customer';
-            String status = userDoc['status'] ?? 'pending';
+          if (usersDoc.exists) {
+            userDoc = usersDoc;
+            actualRole = "Customer";
+          } else if (doctorsDoc.exists) {
+            userDoc = doctorsDoc;
+            actualRole = "Doctor";
+            status = doctorsDoc["status"] ?? "pending"; // Get doctor status
+          }
 
-            if (_selectedRole != storedRole) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content:
-                        Text('Incorrect role selected. Please try again.')),
-              );
-              return;
-            }
-
-            // ✅ If user is a doctor, check approval status
-            if (storedRole == 'Doctor' && status != 'approved') {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text(
-                        'Your profile is under review. Please wait for admin approval.')),
-              );
-              await _auth.signOut();
-              return;
-            }
-
-            // ✅ Navigate to the correct dashboard
-            if (storedRole == 'Doctor') {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const doctorMainLayout()),
-              );
-            } else {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const MainLayout()),
-              );
-            }
-          } else {
+          if (userDoc == null) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content:
                       Text('User data not found. Please contact support.')),
+            );
+            return;
+          }
+
+          // ✅ Check if selected role matches actual role
+          if (_selectedRole != actualRole) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'You selected "$_selectedRole", but your role is "$actualRole". Please select the correct role.'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+            return;
+          }
+
+          // ✅ If the user is a doctor, check approval status
+          if (actualRole == 'Doctor' && status != 'approved') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text(
+                      'Your profile is under review. Please wait for admin approval.')),
+            );
+            await _auth.signOut();
+            return;
+          }
+
+          // ✅ Navigate to the correct dashboard
+          if (actualRole == 'Doctor') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const doctorMainLayout()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainLayout()),
             );
           }
         }

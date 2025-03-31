@@ -131,8 +131,8 @@ class _ProfilePageState extends State<ProfilePage> {
     if (croppedFile == null) return;
 
     File imageFile = File(croppedFile.path);
-    String fileName = "profile_${_user!.uid}.jpg";
-    Reference storageRef = _storage.ref().child("profile_pics/$fileName");
+    String fileName = "${_user!.uid}.jpg";
+    Reference storageRef = _storage.ref().child("Customer/$fileName");
 
     UploadTask uploadTask = storageRef.putFile(imageFile);
     TaskSnapshot snapshot = await uploadTask;

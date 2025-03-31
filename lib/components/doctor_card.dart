@@ -8,7 +8,7 @@ class DoctorCard extends StatelessWidget {
     required this.specialization,
     required this.address,
     required this.registrationNumber,
-    required this.profileUrl, // ✅ Add profileUrl
+    required this.profileUrl,
     required this.route,
   }) : super(key: key);
 
@@ -17,7 +17,7 @@ class DoctorCard extends StatelessWidget {
   final String specialization;
   final String address;
   final String registrationNumber;
-  final String profileUrl; // ✅ New field
+  final String profileUrl;
   final String route;
 
   @override
@@ -35,7 +35,7 @@ class DoctorCard extends StatelessWidget {
                 width: MediaQuery.of(context).size.height * 0.15,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: profileUrl.isNotEmpty // ✅ Check if profileUrl is valid
+                  child: profileUrl.isNotEmpty
                       ? Image.network(
                           profileUrl,
                           fit: BoxFit.cover,
@@ -43,15 +43,13 @@ class DoctorCard extends StatelessWidget {
                             return Image.asset('assets/doctor1.jpeg');
                           },
                         )
-                      : Image.asset('assets/doctor1.jpeg'), // Placeholder
+                      : Image.asset('assets/doctor1.jpeg'),
                 ),
               ),
               Flexible(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 20,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -78,7 +76,15 @@ class DoctorCard extends StatelessWidget {
           ),
         ),
         onTap: () {
-          Navigator.of(context).pushNamed(route, arguments: doctorId);
+          final args = {
+            'doctorId': doctorId,
+            'name': name,
+            'specialization': specialization,
+            'experience': '25 years',
+            'profileUrl': profileUrl,
+          };
+          print("Navigating with arguments: $args"); // Debugging print
+          Navigator.of(context).pushNamed(route, arguments: args);
         },
       ),
     );

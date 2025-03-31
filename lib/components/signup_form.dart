@@ -24,13 +24,17 @@ class _SignUpFormState extends State<SignUpForm> {
   final _passController = TextEditingController();
   final _experienceController = TextEditingController();
   final _specializationController = TextEditingController();
-  final _clinicAddressController = TextEditingController();
-  final _registrationNumberController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _feeController = TextEditingController();
+  final _degreeController = TextEditingController();
+  final _slotTimeController = TextEditingController();
+  final _languageController = TextEditingController();
   bool obsecurePass = true;
   String? _selectedRole;
   File? _profileImage;
   File? _aadharImage;
-  File? _certificatePdf;
+  File? _degreePdf;
+  File? _registrationCertificatePdf;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -55,11 +59,20 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   // 📜 Pick Certificate PDF
-  Future<void> _pickCertificatePdf() async {
+  Future<void> _degreeCertificatePdf() async {
     FilePickerResult? result = await FilePicker.platform
         .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     if (result != null && result.files.single.path != null) {
-      setState(() => _certificatePdf = File(result.files.single.path!));
+      setState(() => _degreePdf = File(result.files.single.path!));
+    }
+  }
+
+  Future<void> _pickregistrationCertificatePdf() async {
+    FilePickerResult? result = await FilePicker.platform
+        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+    if (result != null && result.files.single.path != null) {
+      setState(
+          () => _registrationCertificatePdf = File(result.files.single.path!));
     }
   }
 
@@ -96,7 +109,10 @@ class _SignUpFormState extends State<SignUpForm> {
             );
           }
 
-          String? profileUrl, aadharUrl, certificateUrl;
+          String? profileUrl,
+              aadharUrl,
+              degreeCertificateUrl,
+              registrationCertificateUrl;
           if (_profileImage != null) {
             profileUrl = await _uploadFile(
                 _profileImage!, "${_selectedRole}/${user.uid}/profile.jpg");
@@ -105,9 +121,14 @@ class _SignUpFormState extends State<SignUpForm> {
             aadharUrl = await _uploadFile(
                 _aadharImage!, "${_selectedRole}/${user.uid}/aadhar.jpg");
           }
-          if (_certificatePdf != null) {
-            certificateUrl = await _uploadFile(_certificatePdf!,
-                "${_selectedRole}/${user.uid}/certificate.pdf");
+          if (_degreePdf != null) {
+            degreeCertificateUrl = await _uploadFile(_degreePdf!,
+                "${_selectedRole}/${user.uid}/degreeCertificate.pdf");
+          }
+          if (_registrationCertificatePdf != null) {
+            registrationCertificateUrl = await _uploadFile(
+                _registrationCertificatePdf!,
+                "${_selectedRole}/${user.uid}/registrationCertificate.pdf");
           }
 
           String collection = _selectedRole == "Doctor" ? "doctors" : "users";
@@ -123,12 +144,16 @@ class _SignUpFormState extends State<SignUpForm> {
             'emailVerified': user.emailVerified,
             'status': _selectedRole == 'Doctor' ? 'pending' : 'approved',
             if (_selectedRole == 'Doctor') ...{
+              'degree': _degreeController.text.trim(),
               'experience': _experienceController.text.trim(),
               'specialization': _specializationController.text.trim(),
-              'clinicAddress': _clinicAddressController.text.trim(),
-              'registrationNumber': _registrationNumberController.text.trim(),
+              'slotTime': _slotTimeController.text.trim(),
+              'language': _languageController.text.trim(),
+              'location': _locationController.text.trim(),
+              'fee': _feeController.text.trim(),
               'aadharUrl': aadharUrl,
-              'certificateUrl': certificateUrl,
+              'degreeCertificateUrl': degreeCertificateUrl,
+              'registrationCertificateUrl': registrationCertificateUrl,
             }
           });
 
@@ -142,6 +167,18 @@ class _SignUpFormState extends State<SignUpForm> {
         }
       }
     }
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final now = DateTime.now();
+    final formattedTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+    return TimeOfDay.fromDateTime(formattedTime).format(context);
   }
 
   @override
@@ -168,6 +205,7 @@ class _SignUpFormState extends State<SignUpForm> {
               SizedBox(
                 width: MediaQuery.of(context).size.width *
                     0.86, // Ensures valid width
+                height: MediaQuery.of(context).size.height * 0.06,
                 child: ElevatedButton.icon(
                   onPressed: _pickProfileImage,
                   icon: const Icon(Icons.image),
@@ -197,12 +235,16 @@ class _SignUpFormState extends State<SignUpForm> {
           TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Phone'),
+              decoration: const InputDecoration(labelText: 'Phone Number'),
               validator: (value) =>
                   value!.isEmpty ? 'Enter a valid phone number' : null),
           Config.spaceMedium,
 
           if (_selectedRole == 'Doctor') ...[
+            TextFormField(
+                controller: _degreeController,
+                decoration: const InputDecoration(labelText: 'Degree')),
+            Config.spaceMedium,
             TextFormField(
                 controller: _experienceController,
                 keyboardType: TextInputType.number,
@@ -214,13 +256,73 @@ class _SignUpFormState extends State<SignUpForm> {
                 decoration: const InputDecoration(labelText: 'Specialization')),
             Config.spaceMedium,
             TextFormField(
-                controller: _clinicAddressController,
-                decoration: const InputDecoration(labelText: 'Clinic Address')),
+              controller: _slotTimeController,
+              decoration: const InputDecoration(
+                labelText: 'Slot Time',
+                suffixIcon: Icon(Icons.access_time),
+              ),
+              readOnly: true, // Prevent manual input
+              onTap: () async {
+                TimeOfDay? startTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+
+                if (startTime != null) {
+                  TimeOfDay? endTime = await showTimePicker(
+                    context: context,
+                    initialTime: startTime,
+                  );
+
+                  if (endTime != null) {
+                    setState(() {
+                      _slotTimeController.text =
+                          "${_formatTime(startTime)} to ${_formatTime(endTime)}";
+                    });
+                  }
+                }
+              },
+            ),
+            Config.spaceMedium,
+            DropdownButtonFormField<String>(
+              value: _languageController.text.isNotEmpty
+                  ? _languageController.text
+                  : null,
+              decoration: const InputDecoration(labelText: 'Language'),
+              items: ['Telugu', 'Hindi', 'English']
+                  .map((lang) =>
+                      DropdownMenuItem(value: lang, child: Text(lang)))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _languageController.text = value!;
+                });
+              },
+              validator: (value) =>
+                  value == null ? 'Please select a language' : null,
+            ),
             Config.spaceMedium,
             TextFormField(
-                controller: _registrationNumberController,
-                decoration: const InputDecoration(
-                    labelText: 'Medical Registration Number')),
+                controller: _locationController,
+                decoration: const InputDecoration(labelText: 'Location')),
+            Config.spaceMedium,
+            TextFormField(
+              controller: _feeController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Fee',
+                prefixText: 'Rs. ', // Display Rs. in front
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter the fee';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Enter a valid amount';
+                }
+                return null;
+              },
+            ),
             Config.spaceMedium,
             Row(
               children: [
@@ -248,12 +350,30 @@ class _SignUpFormState extends State<SignUpForm> {
                       0.86, // Ensures valid width
                   height: MediaQuery.of(context).size.height * 0.06,
                   child: ElevatedButton.icon(
-                    onPressed: _pickCertificatePdf,
+                    onPressed: _degreeCertificatePdf,
                     icon: const Icon(Icons.picture_as_pdf),
-                    label: const Text("Upload Certificate"),
+                    label: const Text("Upload Degree Certificate"),
                   ),
                 ),
-                if (_certificatePdf != null)
+                if (_degreePdf != null)
+                  const Icon(Icons.check_circle, color: Colors.green),
+              ],
+            ),
+            Config.spaceMedium,
+            Row(
+              children: [
+                /// 📜 Certificate PDF Picker
+                SizedBox(
+                  width: MediaQuery.of(context).size.width *
+                      0.86, // Ensures valid width
+                  height: MediaQuery.of(context).size.height * 0.06,
+                  child: ElevatedButton.icon(
+                    onPressed: _pickregistrationCertificatePdf,
+                    icon: const Icon(Icons.picture_as_pdf),
+                    label: const Text("Upload Registration Certificate"),
+                  ),
+                ),
+                if (_registrationCertificatePdf != null)
                   const Icon(Icons.check_circle, color: Colors.green),
               ],
             ),
