@@ -29,6 +29,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final _degreeController = TextEditingController();
   final _slotTimeController = TextEditingController();
   final _languageController = TextEditingController();
+  final _stateController = TextEditingController();
   bool obsecurePass = true;
   String? _selectedRole;
   File? _profileImage;
@@ -150,6 +151,7 @@ class _SignUpFormState extends State<SignUpForm> {
               'slotTime': _slotTimeController.text.trim(),
               'language': _languageController.text.trim(),
               'location': _locationController.text.trim(),
+              'state': _stateController.text.trim(),
               'fee': _feeController.text.trim(),
               'aadharUrl': aadharUrl,
               'degreeCertificateUrl': degreeCertificateUrl,
@@ -305,6 +307,53 @@ class _SignUpFormState extends State<SignUpForm> {
             TextFormField(
                 controller: _locationController,
                 decoration: const InputDecoration(labelText: 'Location')),
+            Config.spaceMedium,
+            DropdownButtonFormField<String>(
+              value: _stateController.text.isNotEmpty
+                  ? _stateController.text
+                  : null,
+              decoration: const InputDecoration(labelText: 'State'),
+              items: [
+                'Andhra Pradesh',
+                'Arunachal Pradesh',
+                'Assam',
+                'Bihar',
+                'Chhattisgarh',
+                'Goa',
+                'Gujarat',
+                'Haryana',
+                'Himachal Pradesh',
+                'Jharkhand',
+                'Karnataka',
+                'Kerala',
+                'Madhya Pradesh',
+                'Maharashtra',
+                'Manipur',
+                'Meghalaya',
+                'Mizoram',
+                'Nagaland',
+                'Odisha',
+                'Punjab',
+                'Rajasthan',
+                'Sikkim',
+                'Tamil Nadu',
+                'Telangana',
+                'Tripura',
+                'Uttar Pradesh',
+                'Uttarakhand',
+                'West Bengal'
+              ]
+                  .map((lang) =>
+                      DropdownMenuItem(value: lang, child: Text(lang)))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _stateController.text = value!;
+                });
+              },
+              validator: (value) =>
+                  value == null ? 'Please select a State' : null,
+            ),
             Config.spaceMedium,
             TextFormField(
               controller: _feeController,

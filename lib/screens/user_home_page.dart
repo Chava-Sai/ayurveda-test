@@ -18,6 +18,12 @@ class _HomePageState extends State<UserHomePage> {
   late Future<List<Map<String, dynamic>>> _doctorFuture;
   late Future<Map<String, String>> _userDataFuture;
 
+  // Filter state variables
+  String? _selectedLocation;
+  String? _selectedLanguage;
+  final List<String> _locations = ['Vijayawada', 'Hyderabad', 'Bangalore'];
+  final List<String> _languages = ['Telugu', 'English', 'Hindi'];
+
   List<Map<String, dynamic>> medCat = [
     {"icon": FontAwesomeIcons.userDoctor, "category": "General"},
     {"icon": FontAwesomeIcons.heartPulse, "category": "Cardiology"},
@@ -31,18 +37,26 @@ class _HomePageState extends State<UserHomePage> {
   void initState() {
     super.initState();
     _doctorFuture = fetchDoctors();
-    _userDataFuture = _fetchUserData(); // ✅ Fetch user data
+    _userDataFuture = _fetchUserData();
   }
 
-  /// 🔍 Fetches **Doctors** from `users` collection
-  Future<List<Map<String, dynamic>>> fetchDoctors() async {
+  /// 🔍 Fetches doctors with optional filters
+  Future<List<Map<String, dynamic>>> fetchDoctors(
+      {String? location, String? language}) async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      Query query = FirebaseFirestore.instance
           .collection('doctors')
-          .where('role', isEqualTo: 'Doctor')
-          .where('status', isEqualTo: 'approved')
-          // .where('emailVerified', isEqualTo: true)
-          .get();
+          .where('status', isEqualTo: 'approved');
+
+      if (location != null && location.isNotEmpty) {
+        query = query.where('location', isEqualTo: location);
+      }
+
+      if (language != null && language.isNotEmpty) {
+        query = query.where('language', isEqualTo: language);
+      }
+
+      QuerySnapshot querySnapshot = await query.get();
 
       return querySnapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -55,7 +69,9 @@ class _HomePageState extends State<UserHomePage> {
           "profileUrl":
               data.containsKey("profileUrl") && data["profileUrl"] != null
                   ? data["profileUrl"] as String
-                  : "", // ✅ Ensure profileUrl is always a String
+                  : "",
+          "location": data["location"] ?? "Not specified",
+          "language": data["language"] ?? "Not specified",
         };
       }).toList();
     } catch (e) {
@@ -64,7 +80,7 @@ class _HomePageState extends State<UserHomePage> {
     }
   }
 
-  /// 🔍 Fetches **Logged-in User's Name & Profile Image**
+  /// 🔍 Fetches user data
   Future<Map<String, String>> _fetchUserData() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -77,7 +93,6 @@ class _HomePageState extends State<UserHomePage> {
           .doc(user.uid)
           .get();
 
-      // Ensure `data()` is not null before accessing fields
       if (!userDoc.exists || userDoc.data() == null) {
         return {"name": "User", "profileUrl": ""};
       }
@@ -86,8 +101,7 @@ class _HomePageState extends State<UserHomePage> {
 
       return {
         "name": userData["name"] ?? "User",
-        "profileUrl": userData["profileUrl"]?.toString() ??
-            "", // Convert to string safely
+        "profileUrl": userData["profileUrl"]?.toString() ?? "",
       };
     } catch (e) {
       print("Error fetching user data: $e");
@@ -95,11 +109,33 @@ class _HomePageState extends State<UserHomePage> {
     }
   }
 
-  /// 🔄 Refreshes doctors list when swiping down
+  /// 🔄 Refreshes data
   Future<void> _refreshData() async {
     setState(() {
+      _doctorFuture = fetchDoctors(
+        location: _selectedLocation,
+        language: _selectedLanguage,
+      );
+      _userDataFuture = _fetchUserData();
+    });
+  }
+
+  /// 🔍 Searches doctors with selected filters
+  void _searchDoctors() {
+    setState(() {
+      _doctorFuture = fetchDoctors(
+        location: _selectedLocation,
+        language: _selectedLanguage,
+      );
+    });
+  }
+
+  /// 🗑️ Clears all filters
+  void _clearFilters() {
+    setState(() {
+      _selectedLocation = null;
+      _selectedLanguage = null;
       _doctorFuture = fetchDoctors();
-      _userDataFuture = _fetchUserData(); // ✅ Refresh user data too
     });
   }
 
@@ -116,14 +152,14 @@ class _HomePageState extends State<UserHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  // Header with menu and profile
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.menu,
-                                size: 28), // 3-line menu icon
+                            icon: const Icon(Icons.menu, size: 28),
                             onPressed: () {
                               showModalBottomSheet(
                                 context: context,
@@ -176,8 +212,7 @@ class _HomePageState extends State<UserHomePage> {
                               );
                             },
                           ),
-                          const SizedBox(
-                              width: 10), // Space between menu icon and name
+                          const SizedBox(width: 10),
                           FutureBuilder<Map<String, String>>(
                             future: _userDataFuture,
                             builder: (context, snapshot) {
@@ -231,6 +266,8 @@ class _HomePageState extends State<UserHomePage> {
                     ],
                   ),
                   Config.spaceMedium,
+
+                  // Categories
                   const Text(
                     'Category',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -266,13 +303,121 @@ class _HomePageState extends State<UserHomePage> {
                     ),
                   ),
                   Config.spaceSmall,
+
+                  // Filter Section
                   const Text(
-                    'Appointment Today',
+                    'Find Doctors By',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Config.spaceSmall,
-                  const AppointmentCard(),
+
+                  // Location Dropdown
+                  const Text(
+                    'Location',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _selectedLocation,
+                    hint: const Text('All Locations'),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('All Locations'),
+                      ),
+                      ..._locations.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ],
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedLocation = newValue;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
                   Config.spaceSmall,
+
+                  // Language Dropdown
+                  const Text(
+                    'Language',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _selectedLanguage,
+                    hint: const Text('All Languages'),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('All Languages'),
+                      ),
+                      ..._languages.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ],
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedLanguage = newValue;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  Config.spaceSmall,
+
+                  // Filter Buttons Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[200],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          onPressed: _clearFilters,
+                          child: const Text(
+                            'Clear Filters',
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Config.primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          onPressed: _searchDoctors,
+                          child: const Text(
+                            'Search Doctors',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Config.spaceMedium,
+
+                  // Doctors List
                   const Text(
                     'Our Doctors',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -285,8 +430,22 @@ class _HomePageState extends State<UserHomePage> {
                         return const Center(child: CircularProgressIndicator());
                       }
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(
-                            child: Text("No approved doctors found."));
+                        return Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                _selectedLocation != null ||
+                                        _selectedLanguage != null
+                                    ? "No doctors found matching your criteria."
+                                    : "No approved doctors found.",
+                              ),
+                              TextButton(
+                                onPressed: _refreshData,
+                                child: const Text("Refresh"),
+                              ),
+                            ],
+                          ),
+                        );
                       }
                       return Column(
                         children: snapshot.data!.map((doctor) {
@@ -296,8 +455,9 @@ class _HomePageState extends State<UserHomePage> {
                             specialization: doctor["specialization"],
                             address: doctor["address"],
                             registrationNumber: doctor["registrationNumber"],
-                            profileUrl: doctor["profileUrl"], // ✅ Now safe
+                            profileUrl: doctor["profileUrl"],
                             route: 'doc_details',
+                            //extraInfo: "Speaks ${doctor["language"]} | ${doctor["location"]}",
                           );
                         }).toList(),
                       );
