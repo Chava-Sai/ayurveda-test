@@ -28,7 +28,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final _feeController = TextEditingController();
   final _degreeController = TextEditingController();
   final _slotTimeController = TextEditingController();
-  final _languageController = TextEditingController();
+  // final _languageController = TextEditingController();
   final _stateController = TextEditingController();
   bool obsecurePass = true;
   String? _selectedRole;
@@ -36,6 +36,23 @@ class _SignUpFormState extends State<SignUpForm> {
   File? _aadharImage;
   File? _degreePdf;
   File? _registrationCertificatePdf;
+
+  List<String> _selectedLanguages = [];
+  final List<String> _allLanguages = [
+    'Telugu',
+    'Hindi',
+    'English',
+  ];
+
+  void _toggleLanguage(String language) {
+    setState(() {
+      if (_selectedLanguages.contains(language)) {
+        _selectedLanguages.remove(language);
+      } else {
+        _selectedLanguages.add(language);
+      }
+    });
+  }
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -149,7 +166,7 @@ class _SignUpFormState extends State<SignUpForm> {
               'experience': _experienceController.text.trim(),
               'specialization': _specializationController.text.trim(),
               'slotTime': _slotTimeController.text.trim(),
-              'language': _languageController.text.trim(),
+              'language': _selectedLanguages,
               'location': _locationController.text.trim(),
               'state': _stateController.text.trim(),
               'fee': _feeController.text.trim(),
@@ -286,22 +303,23 @@ class _SignUpFormState extends State<SignUpForm> {
               },
             ),
             Config.spaceMedium,
-            DropdownButtonFormField<String>(
-              value: _languageController.text.isNotEmpty
-                  ? _languageController.text
-                  : null,
-              decoration: const InputDecoration(labelText: 'Language'),
-              items: ['Telugu', 'Hindi', 'English']
-                  .map((lang) =>
-                      DropdownMenuItem(value: lang, child: Text(lang)))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _languageController.text = value!;
-                });
-              },
-              validator: (value) =>
-                  value == null ? 'Please select a language' : null,
+            const Text(
+              'Select Languages You Speak:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Config.spaceSmall,
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 4.0,
+              children: _allLanguages.map((language) {
+                return FilterChip(
+                  label: Text(language),
+                  selected: _selectedLanguages.contains(language),
+                  onSelected: (selected) => _toggleLanguage(language),
+                  selectedColor: Config.primaryColor,
+                  checkmarkColor: Colors.white,
+                );
+              }).toList(),
             ),
             Config.spaceMedium,
             TextFormField(

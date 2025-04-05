@@ -16,6 +16,8 @@ class _DoctorDetailsState extends State<DoctorDetails> {
 
   late String name;
   late String experience;
+  late String degree;
+  late String specialization;
   late String profileUrl;
 
   @override
@@ -25,6 +27,8 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, String>;
     name = args['name']!;
+    degree = args['degree']!;
+    specialization = args['specialization']!;
     experience = args['experience']!;
     profileUrl = args['profileUrl']!;
   }
@@ -54,7 +58,9 @@ class _DoctorDetailsState extends State<DoctorDetails> {
           children: <Widget>[
             AboutDoctor(
               name: name,
+              degree: degree,
               profileUrl: profileUrl,
+              specialization: specialization,
             ),
             DetailBody(experience: experience),
             Padding(
@@ -78,8 +84,15 @@ class _DoctorDetailsState extends State<DoctorDetails> {
 class AboutDoctor extends StatelessWidget {
   final String name;
   final String profileUrl;
+  final String degree;
+  final String specialization; // Default value
 
-  const AboutDoctor({super.key, required this.name, required this.profileUrl});
+  const AboutDoctor(
+      {super.key,
+      required this.name,
+      required this.degree,
+      required this.specialization,
+      required this.profileUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -101,17 +114,14 @@ class AboutDoctor extends StatelessWidget {
                 fontWeight: FontWeight.bold),
           ),
           Config.spaceSmall,
-          SizedBox(
-            width: MediaQuery.of(context).size.height * 0.5,
-            child: const Text(
-              'MBBS, MD, DM, FSCAI',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 15,
-              ),
-              softWrap: true,
-              textAlign: TextAlign.center,
+          Text(
+            specialization,
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 15,
             ),
+            softWrap: true,
+            textAlign: TextAlign.center,
           ),
           Config.spaceSmall,
           SizedBox(

@@ -5,16 +5,20 @@ class DoctorCard extends StatelessWidget {
     Key? key,
     required this.doctorId,
     required this.name,
+    required this.degree,
     required this.specialization,
     required this.address,
     required this.registrationNumber,
     required this.profileUrl,
+    required this.location,
     required this.route,
   }) : super(key: key);
 
   final String doctorId;
   final String name;
+  final String degree;
   final String specialization;
+  final String location;
   final String address;
   final String registrationNumber;
   final String profileUrl;
@@ -68,6 +72,27 @@ class DoctorCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
+                      Row(
+                        children: [
+                          Text(
+                            degree,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.16,
+                          ),
+                          Text(
+                            location,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -80,6 +105,7 @@ class DoctorCard extends StatelessWidget {
             'doctorId': doctorId,
             'name': name,
             'specialization': specialization,
+            'degree': degree,
             'experience': '25 years',
             'profileUrl': profileUrl,
           };

@@ -294,7 +294,9 @@ class _HomePageState extends State<doctorHomePage> {
                           return DoctorCard(
                             doctorId: doctor["id"],
                             name: doctor["name"],
+                            degree: doctor["degree"] ?? "N/A",
                             specialization: doctor["specialization"],
+                            location: doctor["location"] ?? "N/A",
                             address: doctor["address"],
                             registrationNumber: doctor["registrationNumber"],
                             profileUrl: doctor["profileUrl"], // ✅ Now safe

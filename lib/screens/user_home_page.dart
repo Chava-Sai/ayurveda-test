@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hosp_test/components/appointment_card.dart';
 import 'package:hosp_test/components/doctor_card.dart';
 import 'package:hosp_test/profile/profile.dart';
 import 'package:hosp_test/utils/config.dart';
@@ -22,7 +21,7 @@ class _HomePageState extends State<UserHomePage> {
   String? _selectedLocation;
   String? _selectedLanguage;
   final List<String> _locations = ['Vijayawada', 'Hyderabad', 'Bangalore'];
-  final List<String> _languages = ['Telugu', 'English', 'Hindi'];
+  final List<String> _language = ['Telugu', 'English', 'Hindi'];
 
   List<Map<String, dynamic>> medCat = [
     {"icon": FontAwesomeIcons.userDoctor, "category": "General"},
@@ -40,9 +39,11 @@ class _HomePageState extends State<UserHomePage> {
     _userDataFuture = _fetchUserData();
   }
 
-  /// 🔍 Fetches doctors with optional filters
-  Future<List<Map<String, dynamic>>> fetchDoctors(
-      {String? location, String? language}) async {
+  /// Fetches doctors with optional filters
+  Future<List<Map<String, dynamic>>> fetchDoctors({
+    String? location,
+    String? language,
+  }) async {
     try {
       Query query = FirebaseFirestore.instance
           .collection('doctors')
@@ -53,7 +54,7 @@ class _HomePageState extends State<UserHomePage> {
       }
 
       if (language != null && language.isNotEmpty) {
-        query = query.where('language', isEqualTo: language);
+        query = query.where('language', arrayContains: language);
       }
 
       QuerySnapshot querySnapshot = await query.get();
@@ -65,13 +66,11 @@ class _HomePageState extends State<UserHomePage> {
           "name": data["name"] ?? "Unknown",
           "specialization": data["specialization"] ?? "Not Specified",
           "address": data["clinicAddress"] ?? "Not Available",
+          "degree": data["degree"] ?? "Not Available",
           "registrationNumber": data["registrationNumber"] ?? "N/A",
-          "profileUrl":
-              data.containsKey("profileUrl") && data["profileUrl"] != null
-                  ? data["profileUrl"] as String
-                  : "",
+          "profileUrl": data["profileUrl"]?.toString() ?? "",
           "location": data["location"] ?? "Not specified",
-          "language": data["language"] ?? "Not specified",
+          "language": List<String>.from(data["language"] ?? []),
         };
       }).toList();
     } catch (e) {
@@ -80,7 +79,7 @@ class _HomePageState extends State<UserHomePage> {
     }
   }
 
-  /// 🔍 Fetches user data
+  /// Fetches logged-in user's data
   Future<Map<String, String>> _fetchUserData() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -109,7 +108,7 @@ class _HomePageState extends State<UserHomePage> {
     }
   }
 
-  /// 🔄 Refreshes data
+  /// Refreshes data
   Future<void> _refreshData() async {
     setState(() {
       _doctorFuture = fetchDoctors(
@@ -120,7 +119,7 @@ class _HomePageState extends State<UserHomePage> {
     });
   }
 
-  /// 🔍 Searches doctors with selected filters
+  /// Searches doctors with selected filters
   void _searchDoctors() {
     setState(() {
       _doctorFuture = fetchDoctors(
@@ -130,7 +129,7 @@ class _HomePageState extends State<UserHomePage> {
     });
   }
 
-  /// 🗑️ Clears all filters
+  /// Clears all filters
   void _clearFilters() {
     setState(() {
       _selectedLocation = null;
@@ -344,20 +343,20 @@ class _HomePageState extends State<UserHomePage> {
                   ),
                   Config.spaceSmall,
 
-                  // Language Dropdown
+                  // Language Dropdown (Single Selection)
                   const Text(
                     'Language',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   DropdownButtonFormField<String>(
                     value: _selectedLanguage,
-                    hint: const Text('All Languages'),
+                    hint: const Text('All language'),
                     items: [
                       const DropdownMenuItem<String>(
                         value: null,
-                        child: Text('All Languages'),
+                        child: Text('All language'),
                       ),
-                      ..._languages.map((String value) {
+                      ..._language.map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -452,12 +451,14 @@ class _HomePageState extends State<UserHomePage> {
                           return DoctorCard(
                             doctorId: doctor["id"],
                             name: doctor["name"],
+                            degree: doctor["degree"] ?? "N/A",
                             specialization: doctor["specialization"],
                             address: doctor["address"],
                             registrationNumber: doctor["registrationNumber"],
                             profileUrl: doctor["profileUrl"],
+                            location: doctor["location"],
                             route: 'doc_details',
-                            //extraInfo: "Speaks ${doctor["language"]} | ${doctor["location"]}",
+                            //extraInfo: "Speaks ${doctor["language"].join(', ')} | ${doctor["location"]}",
                           );
                         }).toList(),
                       );
