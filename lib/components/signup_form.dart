@@ -26,6 +26,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final _specializationController = TextEditingController();
   final _locationController = TextEditingController();
   final _feeController = TextEditingController();
+  final _aboutController = TextEditingController();
   final _degreeController = TextEditingController();
   final _slotTimeController = TextEditingController();
   // final _languageController = TextEditingController();
@@ -168,6 +169,7 @@ class _SignUpFormState extends State<SignUpForm> {
               'slotTime': _slotTimeController.text.trim(),
               'language': _selectedLanguages,
               'location': _locationController.text.trim(),
+              'about': _aboutController.text.trim(),
               'state': _stateController.text.trim(),
               'fee': _feeController.text.trim(),
               'aadharUrl': aadharUrl,
@@ -260,6 +262,27 @@ class _SignUpFormState extends State<SignUpForm> {
           Config.spaceMedium,
 
           if (_selectedRole == 'Doctor') ...[
+            TextFormField(
+              controller: _aboutController,
+              keyboardType: TextInputType.multiline,
+              maxLines: 5,
+              maxLength: 300,
+              decoration: const InputDecoration(
+                labelText: 'About Doctor',
+                hintText:
+                    'Write a short paragraph about yourself (max 300 characters)',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter something about the doctor';
+                }
+                if (value.length > 300) {
+                  return 'Please limit to 300 characters';
+                }
+                return null;
+              },
+            ),
             TextFormField(
                 controller: _degreeController,
                 decoration: const InputDecoration(labelText: 'Degree')),

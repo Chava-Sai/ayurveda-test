@@ -17,6 +17,8 @@ class _DoctorDetailsState extends State<DoctorDetails> {
   late String name;
   late String experience;
   late String degree;
+  late String about;
+  late String location;
   late String specialization;
   late String profileUrl;
 
@@ -30,6 +32,8 @@ class _DoctorDetailsState extends State<DoctorDetails> {
     degree = args['degree']!;
     specialization = args['specialization']!;
     experience = args['experience']!;
+    about = args['about']!;
+    location = args['location']!;
     profileUrl = args['profileUrl']!;
   }
 
@@ -60,9 +64,13 @@ class _DoctorDetailsState extends State<DoctorDetails> {
               name: name,
               degree: degree,
               profileUrl: profileUrl,
+              location: location,
               specialization: specialization,
             ),
-            DetailBody(experience: experience),
+            DetailBody(
+              experience: experience,
+              about: about,
+            ),
             Padding(
               padding: const EdgeInsets.only(top: 1, left: 20, right: 20),
               child: Button(
@@ -85,12 +93,14 @@ class AboutDoctor extends StatelessWidget {
   final String name;
   final String profileUrl;
   final String degree;
+  final String location; // Default value
   final String specialization; // Default value
 
   const AboutDoctor(
       {super.key,
       required this.name,
       required this.degree,
+      required this.location,
       required this.specialization,
       required this.profileUrl});
 
@@ -115,7 +125,7 @@ class AboutDoctor extends StatelessWidget {
           ),
           Config.spaceSmall,
           Text(
-            specialization,
+            "$specialization,  $degree",
             style: TextStyle(
               color: Colors.grey,
               fontSize: 15,
@@ -124,19 +134,17 @@ class AboutDoctor extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           Config.spaceSmall,
-          SizedBox(
-            width: MediaQuery.of(context).size.height * 0.5,
-            // child: Text(
-            //   'Experience: '15', // Display the passed experience
-            //   style: const TextStyle(
-            //     color: Colors.grey,
-            //     fontSize: 15,
-            //   ),
-            //   softWrap: true,
-            //   textAlign: TextAlign.center,
-            // ),
+          Text(
+            location,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+            softWrap: true,
+            textAlign: TextAlign.center,
           ),
-          Config.spaceSmall,
+          // Config.spaceSmall,
         ],
       ),
     );
@@ -145,8 +153,9 @@ class AboutDoctor extends StatelessWidget {
 
 class DetailBody extends StatelessWidget {
   final String experience;
+  final String about;
 
-  const DetailBody({super.key, required this.experience});
+  const DetailBody({super.key, required this.experience, required this.about});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +183,7 @@ class DetailBody extends StatelessWidget {
             height: MediaQuery.of(context).size.height * 0.02,
           ),
           Text(
-            'Experience: $experience', // Display the passed experience here
+            about, // Display the passed experience here
             style: const TextStyle(
               fontWeight: FontWeight.w500,
               height: 1.5,

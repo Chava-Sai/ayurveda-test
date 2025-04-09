@@ -52,6 +52,7 @@ class _HomePageState extends State<doctorHomePage> {
           "name": data["name"] ?? "Unknown",
           "specialization": data["specialization"] ?? "Not Specified",
           "address": data["clinicAddress"] ?? "Not Available",
+          "about": data["about"] ?? "No information available",
           "registrationNumber": data["registrationNumber"] ?? "N/A",
           "profileUrl":
               data.containsKey("profileUrl") && data["profileUrl"] != null
@@ -298,6 +299,7 @@ class _HomePageState extends State<doctorHomePage> {
                             specialization: doctor["specialization"],
                             location: doctor["location"] ?? "N/A",
                             address: doctor["address"],
+                            about: doctor["about"],
                             registrationNumber: doctor["registrationNumber"],
                             profileUrl: doctor["profileUrl"], // ✅ Now safe
                             route: 'doc_details',

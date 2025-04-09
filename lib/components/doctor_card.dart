@@ -11,6 +11,7 @@ class DoctorCard extends StatelessWidget {
     required this.registrationNumber,
     required this.profileUrl,
     required this.location,
+    required this.about,
     required this.route,
   }) : super(key: key);
 
@@ -19,6 +20,7 @@ class DoctorCard extends StatelessWidget {
   final String degree;
   final String specialization;
   final String location;
+  final String about;
   final String address;
   final String registrationNumber;
   final String profileUrl;
@@ -106,7 +108,9 @@ class DoctorCard extends StatelessWidget {
             'name': name,
             'specialization': specialization,
             'degree': degree,
+            'location': location,
             'experience': '25 years',
+            'about': about,
             'profileUrl': profileUrl,
           };
           print("Navigating with arguments: $args"); // Debugging print
