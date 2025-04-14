@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DoctorCard extends StatelessWidget {
@@ -8,6 +9,10 @@ class DoctorCard extends StatelessWidget {
     required this.degree,
     required this.specialization,
     required this.address,
+    required this.state,
+    required this.experience,
+    required this.slotTime,
+    required this.fee,
     required this.registrationNumber,
     required this.profileUrl,
     required this.location,
@@ -21,13 +26,19 @@ class DoctorCard extends StatelessWidget {
   final String specialization;
   final String location;
   final String about;
+  final String experience;
+  final String slotTime;
+  final String fee;
   final String address;
+  final String state;
   final String registrationNumber;
   final String profileUrl;
   final String route;
 
   @override
   Widget build(BuildContext context) {
+    final String currentUserId =
+        FirebaseAuth.instance.currentUser?.uid ?? "unknown";
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       height: 150,
@@ -104,12 +115,16 @@ class DoctorCard extends StatelessWidget {
         ),
         onTap: () {
           final args = {
+            'userId': currentUserId,
             'doctorId': doctorId,
             'name': name,
             'specialization': specialization,
             'degree': degree,
             'location': location,
-            'experience': '25 years',
+            'slotTime': slotTime,
+            'fee': fee,
+            'state': state,
+            'experience': experience,
             'about': about,
             'profileUrl': profileUrl,
           };

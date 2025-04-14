@@ -52,12 +52,16 @@ class _HomePageState extends State<doctorHomePage> {
           "name": data["name"] ?? "Unknown",
           "specialization": data["specialization"] ?? "Not Specified",
           "address": data["clinicAddress"] ?? "Not Available",
-          "about": data["about"] ?? "No information available",
+          "degree": data["degree"] ?? "Not Available",
+          "about": data["about"] ?? "Not Available",
+          "fee": data["fee"] ?? "Not Available",
+          'slotTime': data["slotTime"] ?? "Not Available",
+          "experience": data["experience"] ?? "N/A",
+          "state": data["state"] ?? "Not Specified",
           "registrationNumber": data["registrationNumber"] ?? "N/A",
-          "profileUrl":
-              data.containsKey("profileUrl") && data["profileUrl"] != null
-                  ? data["profileUrl"] as String
-                  : "", // ✅ Ensure profileUrl is always a String
+          "profileUrl": data["profileUrl"]?.toString() ?? "",
+          "location": data["location"] ?? "Not specified",
+          "language": List<String>.from(data["language"] ?? []),
         };
       }).toList();
     } catch (e) {
@@ -295,14 +299,18 @@ class _HomePageState extends State<doctorHomePage> {
                           return DoctorCard(
                             doctorId: doctor["id"],
                             name: doctor["name"],
+                            fee: doctor["fee"] ?? "N/A",
+                            experience: doctor["experience"] ?? "N/A",
                             degree: doctor["degree"] ?? "N/A",
                             specialization: doctor["specialization"],
-                            location: doctor["location"] ?? "N/A",
+                            slotTime: doctor["slotTime"] ?? "N/A",
                             address: doctor["address"],
                             about: doctor["about"],
+                            state: doctor["state"],
                             registrationNumber: doctor["registrationNumber"],
-                            profileUrl: doctor["profileUrl"], // ✅ Now safe
-                            route: 'doc_details',
+                            profileUrl: doctor["profileUrl"],
+                            location: doctor["location"],
+                            route: 'doc_docdetails',
                           );
                         }).toList(),
                       );

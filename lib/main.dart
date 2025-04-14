@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hosp_test/main_layout.dart';
 import 'package:hosp_test/screens/auth_page.dart';
 import 'package:hosp_test/screens/booking_page.dart';
+import 'package:hosp_test/screens/doctor_doctordetail.dart';
 import 'package:hosp_test/screens/dotor_details.dart';
 import 'package:hosp_test/screens/email_link.dart';
 import 'package:hosp_test/screens/success_booked.dart';
@@ -55,6 +56,7 @@ class MainApp extends StatelessWidget {
         '/': (context) => const AuthPage(),
         'main': (context) => const MainLayout(),
         'doc_details': (context) => const DoctorDetails(),
+        'doc_docdetails': (context) => const doctorDoctorDetails(),
         'success_booking': (context) => const AppointmentBooked(),
         'email_sent': (context) => const EmailSent(),
         'login': (context) => const AuthPage(),
