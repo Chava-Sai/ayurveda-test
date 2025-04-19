@@ -423,7 +423,7 @@ class _HomePageState extends State<UserHomePage> {
 
                   // Doctors List
                   const Text(
-                    'Our Doctors',
+                    'Doctors Available',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Config.spaceSmall,
@@ -433,6 +433,7 @@ class _HomePageState extends State<UserHomePage> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
+
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return Center(
                           child: Column(
@@ -451,8 +452,58 @@ class _HomePageState extends State<UserHomePage> {
                           ),
                         );
                       }
+
+                      final now = TimeOfDay.now();
+                      final currentMinutes = now.hour * 60 + now.minute;
+
+                      List<Map<String, dynamic>> filteredDoctors =
+                          snapshot.data!.where((doctor) {
+                        String slotTime = doctor["slotTime"] ?? "";
+                        final parts = slotTime.toLowerCase().split("to");
+
+                        if (parts.length != 2) return false;
+
+                        TimeOfDay? parseTime(String input) {
+                          try {
+                            final isPM = input.contains('pm');
+                            final clean =
+                                input.replaceAll(RegExp(r'[^\d:]'), '');
+                            final parts = clean.split(':');
+
+                            int hour = int.parse(parts[0]);
+                            int minute =
+                                parts.length > 1 ? int.parse(parts[1]) : 0;
+
+                            if (isPM && hour < 12) hour += 12;
+                            if (!isPM && hour == 12) hour = 0;
+
+                            return TimeOfDay(hour: hour, minute: minute);
+                          } catch (e) {
+                            return null;
+                          }
+                        }
+
+                        final startTime = parseTime(parts[0].trim());
+                        final endTime = parseTime(parts[1].trim());
+
+                        if (startTime == null || endTime == null) return false;
+
+                        final startMinutes =
+                            startTime.hour * 60 + startTime.minute;
+                        final endMinutes = endTime.hour * 60 + endTime.minute;
+
+                        return currentMinutes >= startMinutes &&
+                            currentMinutes <= endMinutes;
+                      }).toList();
+
+                      if (filteredDoctors.isEmpty) {
+                        return Center(
+                          child: Text("No doctors are available at this time."),
+                        );
+                      }
+
                       return Column(
-                        children: snapshot.data!.map((doctor) {
+                        children: filteredDoctors.map((doctor) {
                           return DoctorCard(
                             doctorId: doctor["id"],
                             name: doctor["name"],
@@ -468,7 +519,6 @@ class _HomePageState extends State<UserHomePage> {
                             profileUrl: doctor["profileUrl"],
                             location: doctor["location"],
                             route: 'doc_details',
-                            //extraInfo: "Speaks ${doctor["language"].join(', ')} | ${doctor["location"]}",
                           );
                         }).toList(),
                       );

@@ -65,4 +65,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'hosp-test-app.firebasestorage.app',
     iosBundleId: 'com.example.hospTest',
   );
+
 }

@@ -1,78 +1,141 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hosp_test/services/call_invite.dart';
+import 'package:hosp_test/services/call_service.dart';
 
-class CallPage extends StatelessWidget {
-  const CallPage({Key? key, required this.callID}) : super(key: key);
-  final String callID;
+class CallScreen extends StatefulWidget {
+  final String doctorId;
+  final String doctorName;
 
-  Future<Map<String, String>> _fetchUserDataWithRole() async {
+  const CallScreen({
+    super.key,
+    required this.doctorId,
+    required this.doctorName,
+  });
+
+  @override
+  State<CallScreen> createState() => _CallScreenState();
+}
+
+class _CallScreenState extends State<CallScreen> {
+  bool _isLoading = true;
+  String _currentUserName = 'User';
+  String _currentUserId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentUserData();
+  }
+
+  @override
+  void dispose() {
+    CallService.uninitialize();
+    super.dispose();
+  }
+
+  Future<void> _fetchCurrentUserData() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        return {"name": "User"};
-      }
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-      // First check user in users collection
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+      _currentUserId = user.uid;
+
+      // Check both users and doctors collections
+      final userSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
 
-      if (userDoc.exists) {
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-        return {
-          "name": userData["name"] ?? "User",
-        };
+      if (userSnapshot.exists) {
+        setState(() {
+          _currentUserName = userSnapshot['name'] ?? 'User';
+        });
+      } else {
+        final doctorSnapshot = await FirebaseFirestore.instance
+            .collection('doctors')
+            .doc(user.uid)
+            .get();
+
+        if (doctorSnapshot.exists) {
+          setState(() {
+            _currentUserName = doctorSnapshot['name'] ?? 'Doctor';
+          });
+        }
       }
-
-      // If not found in users, check in doctors
-      DocumentSnapshot doctorDoc = await FirebaseFirestore.instance
-          .collection('doctors')
-          .doc(user.uid)
-          .get();
-
-      if (doctorDoc.exists) {
-        Map<String, dynamic> doctorData =
-            doctorDoc.data() as Map<String, dynamic>;
-        return {
-          "name": doctorData["name"] ?? "Doctor",
-        };
-      }
-
-      return {"name": "User"};
     } catch (e) {
-      print("Error fetching user data: $e");
-      return {"name": "User"};
+      debugPrint('Error fetching user data: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _initiateDoctorCall() async {
+    try {
+      // Initialize call service with current user's credentials
+      await CallService.initializeCallService(
+        userID: _currentUserId,
+        userName: _currentUserName,
+      );
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CallInviteScreen(
+            callerId: _currentUserId,
+            callerName: _currentUserName,
+            doctorId: widget.doctorId,
+            doctorName: widget.doctorName,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Call initialization failed: $e')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userID = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
-
-    return FutureBuilder<Map<String, String>>(
-      future: _fetchUserDataWithRole(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final userName = snapshot.data!['name'] ?? "User";
-
-        return ZegoUIKitPrebuiltCall(
-          appID: 346350858, // Your App ID
-          appSign:
-              "0b5a0cc7b9a48620f474ae57318840047a77acf0ddb6e5e82b144d871447fb07", // Your App Sign
-          userID: userID,
-          userName: userName,
-          callID: callID,
-          config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(title: const Text('Call Doctor')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Calling: Dr. ${widget.doctorName}',
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 30),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.video_call, size: 28),
+                    label: const Text('START VIDEO CALL',
+                        style: TextStyle(fontSize: 18)),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: _initiateDoctorCall,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

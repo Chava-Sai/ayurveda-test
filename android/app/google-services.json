@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "183359905302",
+    "project_id": "hosp-test-app",
+    "storage_bucket": "hosp-test-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:183359905302:android:e5bdb9090212a1feecdf37",
+        "android_client_info": {
+          "package_name": "com.example.hosp_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEfj-5Aym0jKYKAzuFxgDIou2v6Z6izpM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

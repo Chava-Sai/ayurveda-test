@@ -93,10 +93,10 @@ class _doctorDoctorDetailsState extends State<doctorDoctorDetails> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CallPage(
-                          callID: doctorId,
-                        ),
-                      ));
+                          builder: (context) => CallScreen(
+                                doctorId: doctorId,
+                                doctorName: name,
+                              )));
                 },
                 disable: false,
               ),

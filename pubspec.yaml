@@ -25,6 +25,11 @@ dependencies:
   image_picker: ^1.1.2
   image_cropper: ^9.1.0
   zego_uikit_prebuilt_call: ^4.16.27
+  zego_uikit: ^2.28.11
+  zego_uikit_signaling_plugin: ^2.8.11
+  zego_zim: ^2.17.1+1
+  zego_zimkit: ^1.18.15
+  audio_session: ^0.1.25
 
 dev_dependencies:
   flutter_test:

@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hosp_test/components/button.dart';
 import 'package:hosp_test/components/custom_appbar.dart';
 import 'package:hosp_test/screens/call_page.dart';
+import 'package:hosp_test/services/chat_page.dart';
 import 'package:hosp_test/utils/config.dart';
 
 class DoctorDetails extends StatefulWidget {
@@ -159,9 +160,8 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CallPage(
-                                callID: doctorId,
-                              ),
+                              builder: (context) => CallScreen(
+                                  doctorId: doctorId, doctorName: name),
                             ),
                           );
                         }
