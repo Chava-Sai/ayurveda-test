@@ -27,7 +27,7 @@ class _MainLayoutState extends State<doctorMainLayout> {
         }),
         children: const <Widget>[
           doctorHomePage(),
-          ViewChatPage(),
+          ViewchatPage(),
           AppointmentPage(),
         ],
       ),

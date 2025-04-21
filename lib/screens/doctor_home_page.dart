@@ -111,6 +111,8 @@ class _HomePageState extends State<doctorHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refreshData,
@@ -159,7 +161,7 @@ class _HomePageState extends State<doctorHomePage> {
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                    doctorProfilePage()),
+                                                    DoctorProfilePage()),
                                           );
                                         },
                                       ),
@@ -182,8 +184,9 @@ class _HomePageState extends State<doctorHomePage> {
                               );
                             },
                           ),
-                          const SizedBox(
-                              width: 10), // Space between menu icon and name
+                          SizedBox(
+                            width: screenWidth * 0.001,
+                          ), // Space between menu icon and name
                           FutureBuilder<Map<String, String>>(
                             future: _userDataFuture,
                             builder: (context, snapshot) {
@@ -198,8 +201,8 @@ class _HomePageState extends State<doctorHomePage> {
                               }
                               return Text(
                                 "Dr.${snapshot.data?["name"] ?? "User"}!",
-                                style: const TextStyle(
-                                  fontSize: 24,
+                                style: TextStyle(
+                                  fontSize: screenWidth * 0.06,
                                   fontWeight: FontWeight.bold,
                                 ),
                               );
@@ -228,7 +231,7 @@ class _HomePageState extends State<doctorHomePage> {
                           }
 
                           return CircleAvatar(
-                            radius: 30,
+                            radius: screenWidth * 0.07,
                             backgroundImage:
                                 NetworkImage(snapshot.data!["profileUrl"]!),
                           );

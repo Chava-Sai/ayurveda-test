@@ -106,7 +106,7 @@ class _ResetScreenState extends State<ResetScreen> {
                 child: ElevatedButton(
                   onPressed: _resetPassword,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
+                    backgroundColor: Colors.greenAccent,
                     padding: const EdgeInsets.all(15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -140,7 +140,7 @@ class _ResetScreenState extends State<ResetScreen> {
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.indigo),
+                          color: Colors.blue),
                     ),
                   ),
                 ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hosp_test/components/doctor_card.dart';
 import 'package:hosp_test/profile/profile.dart';
+import 'package:hosp_test/screens/appointment_page.dart';
 import 'package:hosp_test/utils/config.dart';
 
 class UserHomePage extends StatefulWidget {
@@ -23,14 +24,14 @@ class _HomePageState extends State<UserHomePage> {
   final List<String> _locations = ['Vijayawada', 'Hyderabad', 'Bangalore'];
   final List<String> _language = ['Telugu', 'English', 'Hindi'];
 
-  List<Map<String, dynamic>> medCat = [
-    {"icon": FontAwesomeIcons.userDoctor, "category": "General"},
-    {"icon": FontAwesomeIcons.heartPulse, "category": "Cardiology"},
-    {"icon": FontAwesomeIcons.lungs, "category": "Respirations"},
-    {"icon": FontAwesomeIcons.hand, "category": "Dermatology"},
-    {"icon": FontAwesomeIcons.personPregnant, "category": "Gynecology"},
-    {"icon": FontAwesomeIcons.teeth, "category": "Dental"},
-  ];
+  // List<Map<String, dynamic>> medCat = [
+  //   {"icon": FontAwesomeIcons.userDoctor, "category": "General"},
+  //   {"icon": FontAwesomeIcons.heartPulse, "category": "Cardiology"},
+  //   {"icon": FontAwesomeIcons.lungs, "category": "Respirations"},
+  //   {"icon": FontAwesomeIcons.hand, "category": "Dermatology"},
+  //   {"icon": FontAwesomeIcons.personPregnant, "category": "Gynecology"},
+  //   {"icon": FontAwesomeIcons.teeth, "category": "Dental"},
+  // ];
 
   @override
   void initState() {
@@ -145,6 +146,8 @@ class _HomePageState extends State<UserHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refreshData,
@@ -158,12 +161,12 @@ class _HomePageState extends State<UserHomePage> {
                 children: <Widget>[
                   // Header with menu and profile
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.menu, size: 28),
+                            icon: const Icon(Icons.menu, size: 30),
                             onPressed: () {
                               showModalBottomSheet(
                                 context: context,
@@ -180,8 +183,13 @@ class _HomePageState extends State<UserHomePage> {
                                             const Icon(Icons.calendar_today),
                                         title: const Text("Appointments"),
                                         onTap: () {
-                                          Navigator.pop(context);
-                                          Navigator.pushNamed(context, 'login');
+                                          // Navigator.pop(context);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AppointmentPage()),
+                                          );
                                         },
                                       ),
                                       ListTile(
@@ -216,7 +224,9 @@ class _HomePageState extends State<UserHomePage> {
                               );
                             },
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(
+                            width: screenWidth * 0.01,
+                          ),
                           FutureBuilder<Map<String, String>>(
                             future: _userDataFuture,
                             builder: (context, snapshot) {
@@ -229,24 +239,32 @@ class _HomePageState extends State<UserHomePage> {
                                       fontWeight: FontWeight.bold),
                                 );
                               }
-                              return Text(
-                                "Hi ${snapshot.data?["name"] ?? "User"}!",
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                              return SizedBox(
+                                width: screenWidth *
+                                    0.45, // Limit width explicitly
+                                child: Text(
+                                  "Hi ${snapshot.data?["name"] ?? "User"}!",
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.065,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               );
                             },
                           ),
                         ],
                       ),
+                      SizedBox(
+                        width: screenWidth * 0.09,
+                      ),
                       FutureBuilder<Map<String, String>>(
                         future: _userDataFuture,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return const CircleAvatar(
-                              radius: 25,
+                            return CircleAvatar(
+                              radius: screenWidth * 0.07,
                               backgroundImage: AssetImage('assets/profile.jpg'),
                             );
                           }
@@ -254,14 +272,15 @@ class _HomePageState extends State<UserHomePage> {
                           if (snapshot.hasError ||
                               !snapshot.hasData ||
                               snapshot.data!["profileUrl"] == "") {
-                            return const CircleAvatar(
-                              radius: 25,
+                            return CircleAvatar(
+                              radius: screenWidth * 0.07,
                               backgroundImage: AssetImage('assets/profile.jpg'),
                             );
                           }
 
                           return CircleAvatar(
-                            radius: 30,
+                            radius: screenWidth *
+                                0.09, // approximately 25 on a 360dp width screen
                             backgroundImage:
                                 NetworkImage(snapshot.data!["profileUrl"]!),
                           );
@@ -269,43 +288,21 @@ class _HomePageState extends State<UserHomePage> {
                       ),
                     ],
                   ),
-                  Config.spaceMedium,
+                  // Config.spaceMedium,
 
                   // Categories
-                  const Text(
-                    'Category',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Config.spaceSmall,
-                  SizedBox(
-                    height: 40.0,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: medCat.map((category) {
-                        return Card(
-                          margin: const EdgeInsets.only(right: 20),
-                          color: Config.primaryColor,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            child: Row(
-                              children: <Widget>[
-                                FaIcon(category['icon'], color: Colors.white),
-                                const SizedBox(width: 20),
-                                Text(
-                                  category['category'],
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                  // const Text(
+                  //   'Category',
+                  //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // ),
+                  // Config.spaceSmall,
+                  // SizedBox(
+                  //   height: 40.0,
+                  //   child: ListView(
+                  //     scrollDirection: Axis.horizontal,
+                  //     children:
+                  //   ),
+                  // ),
                   Config.spaceSmall,
 
                   // Filter Section

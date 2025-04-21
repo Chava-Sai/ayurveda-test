@@ -45,5 +45,5 @@ class Config {
     ),
   );
 
-  static const primaryColor = Colors.greenAccent;
+  static const primaryColor = Color.fromARGB(255, 44, 171, 50);
 }

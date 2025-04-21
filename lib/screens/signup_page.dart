@@ -43,9 +43,9 @@ class _AuthUpPageState extends State<AuthUpPage> {
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.045),
                   Text(
-                    AppText.enText['signIn_text_2']!,
+                    AppText.enText['signUp_text_2']!,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

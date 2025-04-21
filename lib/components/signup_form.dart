@@ -37,6 +37,7 @@ class _SignUpFormState extends State<SignUpForm> {
   File? _aadharImage;
   File? _degreePdf;
   File? _registrationCertificatePdf;
+  bool _certificateError = true;
 
   List<String> _selectedLanguages = [];
   final List<String> _allLanguages = [
@@ -128,6 +129,26 @@ class _SignUpFormState extends State<SignUpForm> {
             );
           }
 
+          // 🌟 Generate unique doctorId like KH01, KH02...
+          String? doctorId;
+          if (_selectedRole == 'Doctor') {
+            final counterRef =
+                _firestore.collection('metadata').doc('doctor_counter');
+            final counterSnap = await counterRef.get();
+
+            int currentCount = 0;
+            if (counterSnap.exists &&
+                counterSnap.data()!.containsKey('count')) {
+              currentCount = counterSnap['count'];
+            }
+
+            currentCount += 1;
+            doctorId = 'KH${currentCount.toString().padLeft(2, '0')}';
+
+            await counterRef.set({'count': currentCount}); // ✅ Update counter
+          }
+
+          // ⬆️ Uploads
           String? profileUrl,
               aadharUrl,
               degreeCertificateUrl,
@@ -146,10 +167,12 @@ class _SignUpFormState extends State<SignUpForm> {
           }
           if (_registrationCertificatePdf != null) {
             registrationCertificateUrl = await _uploadFile(
-                _registrationCertificatePdf!,
-                "${_selectedRole}/${user.uid}/registrationCertificate.pdf");
+              _registrationCertificatePdf!,
+              "${_selectedRole}/${user.uid}/registrationCertificate.pdf",
+            );
           }
 
+          // 🔥 Save user/doctor to Firestore
           String collection = _selectedRole == "Doctor" ? "doctors" : "users";
 
           await _firestore.collection(collection).doc(user.uid).set({
@@ -160,9 +183,9 @@ class _SignUpFormState extends State<SignUpForm> {
             'role': _selectedRole,
             'profileUrl': profileUrl,
             'createdAt': FieldValue.serverTimestamp(),
-            'emailVerified': user.emailVerified,
             'status': _selectedRole == 'Doctor' ? 'pending' : 'approved',
             if (_selectedRole == 'Doctor') ...{
+              'doctorId': doctorId, // ✅ Custom ID stored here
               'degree': _degreeController.text.trim(),
               'experience': _experienceController.text.trim(),
               'specialization': _specializationController.text.trim(),
@@ -174,7 +197,6 @@ class _SignUpFormState extends State<SignUpForm> {
               'fee': _feeController.text.trim(),
               'aadharUrl': aadharUrl,
               'degreeCertificateUrl': degreeCertificateUrl,
-              'registrationCertificateUrl': registrationCertificateUrl,
             }
           });
 
@@ -220,45 +242,104 @@ class _SignUpFormState extends State<SignUpForm> {
           Config.spaceMedium,
 
           /// 🔄 Profile Image Picker
-          Row(
-            children: [
-              /// 🔄 Profile Image Picker
-              SizedBox(
-                width: MediaQuery.of(context).size.width *
-                    0.86, // Ensures valid width
-                height: MediaQuery.of(context).size.height * 0.06,
-                child: ElevatedButton.icon(
-                  onPressed: _pickProfileImage,
-                  icon: const Icon(Icons.image),
-                  label: const Text("Upload Profile Photo"),
+          FormField<File>(
+            validator: (value) {
+              if (_profileImage == null) {
+                return 'Please upload a profile photo';
+              }
+              return null;
+            },
+            builder: (fieldState) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.81,
+                      height: MediaQuery.of(context).size.height * 0.06,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          await _pickProfileImage();
+                          if (_profileImage != null) {
+                            fieldState
+                                .didChange(_profileImage); // ✅ Clear error
+
+                            // 🔄 Optional revalidate the entire form
+                            if (_formKey.currentState != null) {
+                              _formKey.currentState!.validate();
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.image),
+                        label: const Text("Upload Profile Photo"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              fieldState.hasError ? Colors.redAccent : null,
+                        ),
+                      ),
+                    ),
+                    if (_profileImage != null)
+                      const Icon(Icons.check_circle, color: Colors.green),
+                  ],
                 ),
-              ),
-              if (_profileImage != null)
-                const Icon(Icons.check_circle, color: Colors.green),
-            ],
+                if (fieldState.hasError)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      fieldState.errorText!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          Config.spaceMedium,
+
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(labelText: 'Email'),
+            validator: (value) => value == null || value.trim().isEmpty
+                ? 'Enter a valid email'
+                : null,
+            onChanged: (value) {
+              if (_formKey.currentState != null) {
+                _formKey.currentState!.validate();
+              }
+            },
           ),
           Config.spaceMedium,
 
           TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
-              validator: (value) =>
-                  value!.isEmpty ? 'Enter a valid email' : null),
+            controller: _nameController,
+            keyboardType: TextInputType.name,
+            decoration: const InputDecoration(labelText: 'Name'),
+            validator: (value) => value == null || value.trim().isEmpty
+                ? 'Enter a valid name'
+                : null,
+            onChanged: (value) {
+              if (_formKey.currentState != null) {
+                _formKey.currentState!.validate();
+              }
+            },
+          ),
           Config.spaceMedium,
+
           TextFormField(
-              controller: _nameController,
-              keyboardType: TextInputType.name,
-              decoration: const InputDecoration(labelText: 'Name'),
-              validator: (value) =>
-                  value!.isEmpty ? 'Enter a valid name' : null),
-          Config.spaceMedium,
-          TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
-              validator: (value) =>
-                  value!.isEmpty ? 'Enter a valid phone number' : null),
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(labelText: 'Phone Number'),
+            validator: (value) => value == null || value.trim().isEmpty
+                ? 'Enter a valid phone number'
+                : null,
+            onChanged: (value) {
+              if (_formKey.currentState != null) {
+                _formKey.currentState!.validate();
+              }
+            },
+          ),
+
           Config.spaceMedium,
 
           if (_selectedRole == 'Doctor') ...[
@@ -274,28 +355,63 @@ class _SignUpFormState extends State<SignUpForm> {
                 border: OutlineInputBorder(),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) {
+                if (value == null || value.trim().isEmpty) {
                   return 'Please enter something about the doctor';
                 }
-                if (value.length > 300) {
+                if (value.trim().length > 300) {
                   return 'Please limit to 300 characters';
                 }
                 return null;
               },
+              onChanged: (value) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!
+                      .validate(); // Triggers re-validation as user types
+                }
+              },
             ),
-            TextFormField(
-                controller: _degreeController,
-                decoration: const InputDecoration(labelText: 'Degree')),
             Config.spaceMedium,
             TextFormField(
-                controller: _experienceController,
-                keyboardType: TextInputType.number,
-                decoration:
-                    const InputDecoration(labelText: 'Experience (Years)')),
+              controller: _degreeController,
+              decoration: const InputDecoration(labelText: 'Degree'),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Enter a valid Degree'
+                  : null,
+              onChanged: (value) {
+                // Triggers rebuild and clears error once the user types
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
+            ),
             Config.spaceMedium,
             TextFormField(
-                controller: _specializationController,
-                decoration: const InputDecoration(labelText: 'Specialization')),
+              controller: _experienceController,
+              keyboardType: TextInputType.number,
+              decoration:
+                  const InputDecoration(labelText: 'Experience (Years)'),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Enter a valid Experience'
+                  : null,
+              onChanged: (value) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
+            ),
+            Config.spaceMedium,
+            TextFormField(
+              controller: _specializationController,
+              decoration: const InputDecoration(labelText: 'Specialization'),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Enter a valid Specialization'
+                  : null,
+              onChanged: (value) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
+            ),
             Config.spaceMedium,
             TextFormField(
               controller: _slotTimeController,
@@ -303,6 +419,9 @@ class _SignUpFormState extends State<SignUpForm> {
                 labelText: 'Slot Time',
                 suffixIcon: Icon(Icons.access_time),
               ),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Enter a valid Slot Time'
+                  : null,
               readOnly: true, // Prevent manual input
               onTap: () async {
                 TimeOfDay? startTime = await showTimePicker(
@@ -321,34 +440,85 @@ class _SignUpFormState extends State<SignUpForm> {
                       _slotTimeController.text =
                           "${_formatTime(startTime)} to ${_formatTime(endTime)}";
                     });
+
+                    // Trigger re-validation after setting the slot time
+                    if (_formKey.currentState != null) {
+                      _formKey.currentState!.validate();
+                    }
                   }
                 }
               },
             ),
             Config.spaceMedium,
-            const Text(
-              'Select Languages You Speak:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Config.spaceSmall,
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 4.0,
-              children: _allLanguages.map((language) {
-                return FilterChip(
-                  label: Text(language),
-                  selected: _selectedLanguages.contains(language),
-                  onSelected: (selected) => _toggleLanguage(language),
-                  selectedColor: Config.primaryColor,
-                  checkmarkColor: Colors.white,
-                );
-              }).toList(),
+            FormField<List<String>>(
+              initialValue: _selectedLanguages,
+              validator: (value) {
+                if (_selectedLanguages.isEmpty) {
+                  return 'Please select at least one language';
+                }
+                return null;
+              },
+              builder: (state) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: const Text(
+                      'Select Languages You Speak:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Config.spaceSmall,
+                  Center(
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: _allLanguages.map((language) {
+                        return FilterChip(
+                          label: Text(language),
+                          selected: _selectedLanguages.contains(language),
+                          onSelected: (selected) {
+                            _toggleLanguage(language);
+                            state.didChange(
+                                _selectedLanguages); // update form state
+
+                            // Immediately validate on selection
+                            if (_formKey.currentState != null) {
+                              _formKey.currentState!.validate();
+                            }
+                          },
+                          selectedColor: Config.primaryColor,
+                          checkmarkColor: Colors.white,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  if (state.hasError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: Text(
+                        state.errorText!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                ],
+              ),
             ),
             Config.spaceMedium,
+            // LOCATION
             TextFormField(
-                controller: _locationController,
-                decoration: const InputDecoration(labelText: 'Location')),
+              controller: _locationController,
+              decoration: const InputDecoration(labelText: 'Location'),
+              validator: (value) =>
+                  value!.isEmpty ? 'Enter a valid Location' : null,
+              onChanged: (_) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
+            ),
             Config.spaceMedium,
+
+// STATE (Dropdown)
             DropdownButtonFormField<String>(
               value: _stateController.text.isNotEmpty
                   ? _stateController.text
@@ -391,17 +561,22 @@ class _SignUpFormState extends State<SignUpForm> {
                 setState(() {
                   _stateController.text = value!;
                 });
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
               },
               validator: (value) =>
                   value == null ? 'Please select a State' : null,
             ),
             Config.spaceMedium,
+
+// FEE
             TextFormField(
               controller: _feeController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Fee',
-                prefixText: 'Rs. ', // Display Rs. in front
+                prefixText: 'Rs. ',
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -412,75 +587,177 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              onChanged: (_) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
+            ),
+
+            Config.spaceMedium,
+            FormField<File>(
+              validator: (value) {
+                if (_aadharImage == null) {
+                  return 'Please upload your Aadhar image';
+                }
+                return null;
+              },
+              builder: (fieldState) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.81,
+                        height: MediaQuery.of(context).size.height * 0.06,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final pickedFile = await ImagePicker().pickImage(
+                              source: ImageSource.gallery,
+                            );
+                            if (pickedFile != null) {
+                              setState(() {
+                                _aadharImage = File(pickedFile.path);
+                              });
+                              fieldState
+                                  .didChange(_aadharImage); // ✅ Sync form state
+
+                              // Optionally trigger form validation again
+                              if (_formKey.currentState != null) {
+                                _formKey.currentState!.validate();
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.image),
+                          label: const Text("Upload Aadhar"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                fieldState.hasError ? Colors.redAccent : null,
+                          ),
+                        ),
+                      ),
+                      if (_aadharImage != null)
+                        const Icon(Icons.check_circle, color: Colors.green),
+                    ],
+                  ),
+                  if (fieldState.hasError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: Text(
+                        fieldState.errorText!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                ],
+              ),
             ),
             Config.spaceMedium,
-            Row(
-              children: [
-                /// 🔄 Aadhar Image Picker
-                SizedBox(
-                  width: MediaQuery.of(context).size.width *
-                      0.86, // Ensures valid width
-                  height: MediaQuery.of(context).size.height * 0.06,
-                  child: ElevatedButton.icon(
-                    onPressed: _pickAadharImage,
-                    icon: const Icon(Icons.image),
-                    label: const Text("Upload Aadhar"),
+            FormField<File>(
+              validator: (value) {
+                if (_degreePdf == null) {
+                  return 'This document is required.';
+                }
+                return null;
+              },
+              builder: (fieldState) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FormField<File>(
+                    validator: (file) {
+                      if (_degreePdf == null) {
+                        return 'This document is required.';
+                      }
+                      return null;
+                    },
+                    builder: (fieldState) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.81,
+                              height: MediaQuery.of(context).size.height * 0.06,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  await _degreeCertificatePdf();
+                                  fieldState.didChange(
+                                      _degreePdf); // update form state
+
+                                  if (_formKey.currentState != null) {
+                                    _formKey.currentState!
+                                        .validate(); // trigger validation
+                                  }
+                                },
+                                icon: const Icon(Icons.picture_as_pdf),
+                                label: const Text(
+                                    "Upload Degree and Registration Certificate"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: fieldState.hasError
+                                      ? Colors.redAccent
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            if (_degreePdf != null)
+                              const Icon(Icons.check_circle,
+                                  color: Colors.green),
+                          ],
+                        ),
+                        if (fieldState.hasError)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              "This document is required.",
+                              style: TextStyle(color: Colors.red, fontSize: 12),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                if (_aadharImage != null)
-                  const Icon(Icons.check_circle, color: Colors.green),
-              ],
-            ),
-            Config.spaceMedium,
-            Row(
-              children: [
-                /// 📜 Certificate PDF Picker
-                SizedBox(
-                  width: MediaQuery.of(context).size.width *
-                      0.86, // Ensures valid width
-                  height: MediaQuery.of(context).size.height * 0.06,
-                  child: ElevatedButton.icon(
-                    onPressed: _degreeCertificatePdf,
-                    icon: const Icon(Icons.picture_as_pdf),
-                    label: const Text("Upload Degree Certificate"),
-                  ),
-                ),
-                if (_degreePdf != null)
-                  const Icon(Icons.check_circle, color: Colors.green),
-              ],
-            ),
-            Config.spaceMedium,
-            Row(
-              children: [
-                /// 📜 Certificate PDF Picker
-                SizedBox(
-                  width: MediaQuery.of(context).size.width *
-                      0.86, // Ensures valid width
-                  height: MediaQuery.of(context).size.height * 0.06,
-                  child: ElevatedButton.icon(
-                    onPressed: _pickregistrationCertificatePdf,
-                    icon: const Icon(Icons.picture_as_pdf),
-                    label: const Text("Upload Registration Certificate"),
-                  ),
-                ),
-                if (_registrationCertificatePdf != null)
-                  const Icon(Icons.check_circle, color: Colors.green),
-              ],
+                ],
+              ),
             ),
             Config.spaceMedium,
           ],
 
           TextFormField(
-              controller: _passController,
-              obscureText: obsecurePass,
-              decoration: InputDecoration(
-                  labelText: 'Password',
-                  suffixIcon: IconButton(
-                      onPressed: () =>
-                          setState(() => obsecurePass = !obsecurePass),
-                      icon: Icon(obsecurePass
-                          ? Icons.visibility_off
-                          : Icons.visibility)))),
+            controller: _passController,
+            obscureText: obsecurePass,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              suffixIcon: IconButton(
+                onPressed: () => setState(() => obsecurePass = !obsecurePass),
+                icon: Icon(
+                    obsecurePass ? Icons.visibility_off : Icons.visibility),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Enter your password';
+              }
+
+              final password = value.trim();
+
+              if (password.length < 8) {
+                return 'Password must be at least 8 characters';
+              }
+              if (!RegExp(r'[A-Z]').hasMatch(password)) {
+                return 'Include at least one uppercase letter';
+              }
+              if (!RegExp(r'[a-z]').hasMatch(password)) {
+                return 'Include at least one lowercase letter';
+              }
+              if (!RegExp(r'\d').hasMatch(password)) {
+                return 'Include at least one number';
+              }
+              if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+                return 'Include at least one special character';
+              }
+
+              return null;
+            },
+          ),
+
           SizedBox(height: MediaQuery.of(context).size.height * 0.045),
           Button(
               width: double.infinity,

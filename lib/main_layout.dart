@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hosp_test/components/searchby_id.dart';
 import 'package:hosp_test/screens/appointment_page.dart';
 import 'package:hosp_test/screens/user_home_page.dart';
 import 'package:hosp_test/services/viewchat_page.dart';
@@ -26,7 +27,8 @@ class _MainLayoutState extends State<MainLayout> {
         }),
         children: const <Widget>[
           UserHomePage(),
-          ViewChatPage(),
+          SearchDoctorById(),
+          ViewchatPage(),
           AppointmentPage(),
         ],
       ),
@@ -48,8 +50,18 @@ class _MainLayoutState extends State<MainLayout> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.houseChimneyMedical),
-            label: 'Home',
+            icon: Icon(
+              Icons.search_rounded,
+              size: 33,
+            ),
+            label: 'search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.message_rounded,
+              size: 30,
+            ),
+            label: 'Messages',
           ),
           BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.solidCalendarCheck),
