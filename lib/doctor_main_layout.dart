@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hosp_test/screens/appointment_page.dart';
 import 'package:hosp_test/screens/doctor_home_page.dart';
-import 'package:hosp_test/screens/user_home_page.dart';
+//import 'package:hosp_test/screens/user_home_page.dart';
 import 'package:hosp_test/services/viewchat_page.dart';
 
 class doctorMainLayout extends StatefulWidget {
@@ -49,8 +49,11 @@ class _MainLayoutState extends State<doctorMainLayout> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.houseChimneyMedical),
-            label: 'Home',
+            icon: Icon(
+              Icons.message_rounded,
+              size: 30,
+            ),
+            label: 'Messages',
           ),
           BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.solidCalendarCheck),

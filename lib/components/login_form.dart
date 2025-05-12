@@ -3,10 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hosp_test/components/button.dart';
 import 'package:hosp_test/doctor_main_layout.dart';
 import 'package:hosp_test/main_layout.dart';
-import 'package:hosp_test/screens/doctor_home_page.dart';
 import 'package:hosp_test/screens/forgot_password.dart';
-import 'package:hosp_test/screens/user_home_page.dart';
-import 'package:hosp_test/screens/success_booked.dart'; // Import ResetScreen
 import 'package:hosp_test/utils/config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -21,23 +18,24 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
-  String? _selectedRole; // Store selected role
+  bool _isLoading = false;
+
+  String? _selectedRole;
   bool obsecurePass = true;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Firebase Login with Role-Based Navigation
-  // Firebase Login with Role-Based Navigation
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedRole == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Please select a role: Doctor or Customer')),
+          const SnackBar(content: Text('Please select a role')),
         );
         return;
       }
+
+      setState(() => _isLoading = true); // Start loading
 
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -56,10 +54,10 @@ class _LoginFormState extends State<LoginForm> {
               const SnackBar(
                   content: Text('Please verify your email before logging in.')),
             );
+            setState(() => _isLoading = false); // Stop loading
             return;
           }
 
-          // ✅ Check both "users" and "doctors" collections
           DocumentSnapshot? userDoc;
           String? actualRole;
           String? status;
@@ -75,51 +73,51 @@ class _LoginFormState extends State<LoginForm> {
           } else if (doctorsDoc.exists) {
             userDoc = doctorsDoc;
             actualRole = "Doctor";
-            status = doctorsDoc["status"] ?? "pending"; // Get doctor status
+            status = doctorsDoc["status"] ?? "pending";
           }
 
           if (userDoc == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content:
-                      Text('User data not found. Please contact support.')),
+              const SnackBar(content: Text('User data not found.')),
             );
+            setState(() => _isLoading = false);
             return;
           }
 
-          // ✅ Check if selected role matches actual role
           if (_selectedRole != actualRole) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    'You selected "$_selectedRole", but your role is "$actualRole". Please select the correct role.'),
+                    'Selected "$_selectedRole", but your role is "$actualRole".'),
                 backgroundColor: Colors.redAccent,
               ),
             );
+            setState(() => _isLoading = false);
             return;
           }
 
-          // ✅ If the user is a doctor, check approval status
           if (actualRole == 'Doctor' && status != 'approved') {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                  content: Text(
-                      'Your profile is under review. Please wait for admin approval.')),
+                  content: Text('Profile under review. Wait for approval.')),
             );
             await _auth.signOut();
+            setState(() => _isLoading = false);
             return;
           }
 
-          // ✅ Navigate to the correct dashboard
-          if (actualRole == 'Doctor') {
+          await _firestore
+              .collection(actualRole == 'Doctor' ? 'doctors' : 'users')
+              .doc(user.uid)
+              .update({'lastLogin': FieldValue.serverTimestamp()});
+
+          if (mounted) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const doctorMainLayout()),
-            );
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MainLayout()),
+              MaterialPageRoute(
+                  builder: (context) => actualRole == 'Doctor'
+                      ? const doctorMainLayout()
+                      : const MainLayout()),
             );
           }
         }
@@ -132,6 +130,8 @@ class _LoginFormState extends State<LoginForm> {
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(message)));
+      } finally {
+        setState(() => _isLoading = false); // Stop loading
       }
     }
   }
@@ -142,7 +142,6 @@ class _LoginFormState extends State<LoginForm> {
       key: _formKey,
       child: Column(
         children: <Widget>[
-          // Dropdown for selecting user type
           DropdownButtonFormField<String>(
             value: _selectedRole,
             decoration: const InputDecoration(labelText: 'Login As'),
@@ -153,8 +152,6 @@ class _LoginFormState extends State<LoginForm> {
             validator: (value) => value == null ? 'Please select a role' : null,
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.045),
-
-          // Email Field
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -162,15 +159,12 @@ class _LoginFormState extends State<LoginForm> {
             decoration: const InputDecoration(
               hintText: 'Email Address',
               labelText: 'Email',
-              alignLabelWithHint: true,
               prefixIcon: Icon(Icons.email_outlined),
               prefixIconColor: Config.primaryColor,
             ),
             validator: (value) => value!.isEmpty ? 'Enter a valid email' : null,
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.045),
-
-          // Password Field
           TextFormField(
             controller: _passController,
             obscureText: obsecurePass,
@@ -178,27 +172,20 @@ class _LoginFormState extends State<LoginForm> {
             decoration: InputDecoration(
               hintText: 'Password',
               labelText: 'Password',
-              alignLabelWithHint: true,
               prefixIcon: const Icon(Icons.lock_outline),
               prefixIconColor: Config.primaryColor,
               suffixIcon: IconButton(
-                onPressed: () {
-                  setState(() {
-                    obsecurePass = !obsecurePass;
-                  });
-                },
-                icon: obsecurePass
-                    ? const Icon(Icons.visibility_off_outlined,
-                        color: Colors.black38)
-                    : const Icon(Icons.visibility_outlined,
-                        color: Config.primaryColor),
+                onPressed: () => setState(() => obsecurePass = !obsecurePass),
+                icon: Icon(
+                    obsecurePass
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: obsecurePass ? Colors.black38 : Config.primaryColor),
               ),
             ),
             validator: (value) =>
                 value!.isEmpty ? 'Enter a valid password' : null,
           ),
-
-          // Forgot Password Button
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
@@ -218,15 +205,15 @@ class _LoginFormState extends State<LoginForm> {
               ),
             ),
           ),
-
           SizedBox(height: MediaQuery.of(context).size.height * 0.025),
-
-          // Login Button
-          Button(
-              width: double.infinity,
-              title: 'Login',
-              onPressed: _login,
-              disable: false),
+          _isLoading
+              ? const CircularProgressIndicator()
+              : Button(
+                  width: double.infinity,
+                  title: 'Login',
+                  onPressed: _login,
+                  disable: false,
+                ),
         ],
       ),
     );

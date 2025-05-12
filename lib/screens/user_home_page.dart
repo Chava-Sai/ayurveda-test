@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hosp_test/components/doctor_card.dart';
+import 'package:hosp_test/profile/Appointment_page.dart';
 import 'package:hosp_test/profile/profile.dart';
 import 'package:hosp_test/screens/appointment_page.dart';
 import 'package:hosp_test/utils/config.dart';
@@ -183,12 +184,12 @@ class _HomePageState extends State<UserHomePage> {
                                             const Icon(Icons.calendar_today),
                                         title: const Text("Appointments"),
                                         onTap: () {
-                                          // Navigator.pop(context);
+                                          Navigator.pop(context);
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                    AppointmentPage()),
+                                                    AppointmentTodayPage()),
                                           );
                                         },
                                       ),

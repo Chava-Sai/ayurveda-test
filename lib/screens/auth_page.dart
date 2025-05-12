@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hosp_test/components/login_form.dart';
-import 'package:hosp_test/components/signup_form.dart';
-import 'package:hosp_test/components/social_button.dart';
 import 'package:hosp_test/screens/signup_page.dart';
-import 'package:hosp_test/utils/config.dart';
+//import 'package:hosp_test/utils/config.dart';
 import 'package:hosp_test/utils/text.dart';
 
 class AuthPage extends StatefulWidget {
@@ -16,76 +14,76 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
-    //Config.init(context);
+    final size = MediaQuery.of(context).size;
+    final height = size.height;
+    final width = size.width;
+
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context)
-            .unfocus(); // Dismiss keyboard when tapping outside
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        body: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 25,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.symmetric(
+              horizontal: width * 0.05,
+              vertical: height * 0.002,
             ),
-            child: SafeArea(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Image(
-                    image: AssetImage(
-                      'assets/2.png',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  width: double.infinity,
+                  child: Image.asset(
+                    'assets/2.png',
+                    fit: BoxFit.contain,
+                    height: height * 0.3,
+                  ),
+                ),
+                SizedBox(height: height * 0.02),
+                Text(
+                  AppText.enText['signIn_text']!,
+                  style: TextStyle(
+                    fontSize: width * 0.055,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: height * 0.04),
+
+                /// Login Form
+                const LoginForm(),
+
+                SizedBox(height: height * 0.03),
+
+                /// Sign Up Redirect
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      AppText.enText['signUp_text']!,
+                      style: TextStyle(
+                        fontSize: width * 0.04,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
-                    width: double.infinity,
-                  ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.045),
-                  Text(
-                    AppText.enText['signIn_text']!,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.045),
-                  const LoginForm(),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.08,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        AppText.enText['signUp_text']!,
+                    TextButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AuthUpPage(),
+                        ),
+                      ),
+                      child: Text(
+                        'Sign Up',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.grey.shade500,
+                          fontSize: width * 0.045,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AuthUpPage()),
-                          );
-                        },
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue, // Adjust color as needed
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                )
+              ],
             ),
           ),
         ),

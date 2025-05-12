@@ -170,16 +170,16 @@ class _DoctorDetailsState extends State<DoctorDetails> {
               //     disable: !isSlotActive,
               //   ),
               // ),
-              if (!isSlotActive)
-                Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.03),
-                  child: Text(
-                    "Booking is allowed only during the available slot time.",
-                    style: TextStyle(
-                        color: Colors.red, fontSize: screenWidth * 0.03),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+              // if (!isSlotActive)
+              //   Padding(
+              //     padding: EdgeInsets.all(screenWidth * 0.03),
+              //     child: Text(
+              //       "Booking is allowed only during the available slot time.",
+              //       style: TextStyle(
+              //           color: Colors.red, fontSize: screenWidth * 0.03),
+              //       textAlign: TextAlign.center,
+              //     ),
+              //   ),
             ],
           ),
         ),

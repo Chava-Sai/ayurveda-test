@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hosp_test/components/appointment_card.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:hosp_test/components/appointment_card.dart';
 import 'package:hosp_test/components/doctor_card.dart';
+import 'package:hosp_test/profile/Appointment_page.dart';
 import 'package:hosp_test/profile/doctor_profile.dart';
+//import 'package:hosp_test/screens/appointment_page.dart';
 import 'package:hosp_test/utils/config.dart';
-import 'package:hosp_test/profile/profile.dart';
+//import 'package:hosp_test/profile/profile.dart';
 
 class doctorHomePage extends StatefulWidget {
   const doctorHomePage({super.key});
@@ -18,15 +20,17 @@ class doctorHomePage extends StatefulWidget {
 class _HomePageState extends State<doctorHomePage> {
   late Future<List<Map<String, dynamic>>> _doctorFuture;
   late Future<Map<String, String>> _userDataFuture;
+  String? _selectedLocation;
+  String? _selectedLanguage;
 
-  List<Map<String, dynamic>> medCat = [
-    {"icon": FontAwesomeIcons.userDoctor, "category": "General"},
-    {"icon": FontAwesomeIcons.heartPulse, "category": "Cardiology"},
-    {"icon": FontAwesomeIcons.lungs, "category": "Respirations"},
-    {"icon": FontAwesomeIcons.hand, "category": "Dermatology"},
-    {"icon": FontAwesomeIcons.personPregnant, "category": "Gynecology"},
-    {"icon": FontAwesomeIcons.teeth, "category": "Dental"},
-  ];
+  // List<Map<String, dynamic>> medCat = [
+  //   {"icon": FontAwesomeIcons.userDoctor, "category": "General"},
+  //   {"icon": FontAwesomeIcons.heartPulse, "category": "Cardiology"},
+  //   {"icon": FontAwesomeIcons.lungs, "category": "Respirations"},
+  //   {"icon": FontAwesomeIcons.hand, "category": "Dermatology"},
+  //   {"icon": FontAwesomeIcons.personPregnant, "category": "Gynecology"},
+  //   {"icon": FontAwesomeIcons.teeth, "category": "Dental"},
+  // ];
 
   @override
   void initState() {
@@ -112,7 +116,7 @@ class _HomePageState extends State<doctorHomePage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+ //   final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refreshData,
@@ -149,7 +153,12 @@ class _HomePageState extends State<doctorHomePage> {
                                         title: const Text("Appointments"),
                                         onTap: () {
                                           Navigator.pop(context);
-                                          Navigator.pushNamed(context, 'login');
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AppointmentTodayPage()),
+                                          );
                                         },
                                       ),
                                       ListTile(
@@ -239,51 +248,44 @@ class _HomePageState extends State<doctorHomePage> {
                       ),
                     ],
                   ),
-                  Config.spaceMedium,
-                  const Text(
-                    'Category',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Config.spaceSmall,
-                  SizedBox(
-                    height: 40.0,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: medCat.map((category) {
-                        return Card(
-                          margin: const EdgeInsets.only(right: 20),
-                          color: Config.primaryColor,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            child: Row(
-                              children: <Widget>[
-                                FaIcon(category['icon'], color: Colors.white),
-                                const SizedBox(width: 20),
-                                Text(
-                                  category['category'],
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  Config.spaceSmall,
-                  const Text(
-                    'Appointment Today',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Config.spaceSmall,
-                  const AppointmentCard(),
+                  //Config.spaceMedium,
+                  // const Text(
+                  //   'Category',
+                  //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // ),
+                  // Config.spaceSmall,
+                  // SizedBox(
+                  //   height: 40.0,
+                  //   child: ListView(
+                  //     scrollDirection: Axis.horizontal,
+                  //     children: medCat.map((category) {
+                  //       return Card(
+                  //         margin: const EdgeInsets.only(right: 20),
+                  //         color: Config.primaryColor,
+                  //         child: Padding(
+                  //           padding: const EdgeInsets.symmetric(
+                  //               horizontal: 15, vertical: 10),
+                  //           child: Row(
+                  //             children: <Widget>[
+                  //               FaIcon(category['icon'], color: Colors.white),
+                  //               const SizedBox(width: 20),
+                  //               Text(
+                  //                 category['category'],
+                  //                 style: const TextStyle(
+                  //                     fontSize: 16,
+                  //                     fontWeight: FontWeight.bold,
+                  //                     color: Colors.white),
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //       );
+                  //     }).toList(),
+                  //   ),
+                  // ),
                   Config.spaceSmall,
                   const Text(
-                    'Our Doctors',
+                    'Doctors Available',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Config.spaceSmall,
@@ -293,20 +295,85 @@ class _HomePageState extends State<doctorHomePage> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
+
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(
-                            child: Text("No approved doctors found."));
+                        return Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                _selectedLocation != null ||
+                                        _selectedLanguage != null
+                                    ? "No doctors found matching your criteria."
+                                    : "No approved doctors found.",
+                              ),
+                              TextButton(
+                                onPressed: _refreshData,
+                                child: const Text("Refresh"),
+                              ),
+                            ],
+                          ),
+                        );
                       }
+
+                      final now = TimeOfDay.now();
+                      final currentMinutes = now.hour * 60 + now.minute;
+
+                      List<Map<String, dynamic>> filteredDoctors =
+                          snapshot.data!.where((doctor) {
+                        String slotTime = doctor["slotTime"] ?? "";
+                        final parts = slotTime.toLowerCase().split("to");
+
+                        if (parts.length != 2) return false;
+
+                        TimeOfDay? parseTime(String input) {
+                          try {
+                            final isPM = input.contains('pm');
+                            final clean =
+                                input.replaceAll(RegExp(r'[^\d:]'), '');
+                            final parts = clean.split(':');
+
+                            int hour = int.parse(parts[0]);
+                            int minute =
+                                parts.length > 1 ? int.parse(parts[1]) : 0;
+
+                            if (isPM && hour < 12) hour += 12;
+                            if (!isPM && hour == 12) hour = 0;
+
+                            return TimeOfDay(hour: hour, minute: minute);
+                          } catch (e) {
+                            return null;
+                          }
+                        }
+
+                        final startTime = parseTime(parts[0].trim());
+                        final endTime = parseTime(parts[1].trim());
+
+                        if (startTime == null || endTime == null) return false;
+
+                        final startMinutes =
+                            startTime.hour * 60 + startTime.minute;
+                        final endMinutes = endTime.hour * 60 + endTime.minute;
+
+                        return currentMinutes >= startMinutes &&
+                            currentMinutes <= endMinutes;
+                      }).toList();
+
+                      if (filteredDoctors.isEmpty) {
+                        return Center(
+                          child: Text("No doctors are available at this time."),
+                        );
+                      }
+
                       return Column(
-                        children: snapshot.data!.map((doctor) {
+                        children: filteredDoctors.map((doctor) {
                           return DoctorCard(
                             doctorId: doctor["id"],
                             name: doctor["name"],
                             fee: doctor["fee"] ?? "N/A",
                             experience: doctor["experience"] ?? "N/A",
+                            slotTime: doctor["slotTime"] ?? "N/A",
                             degree: doctor["degree"] ?? "N/A",
                             specialization: doctor["specialization"],
-                            slotTime: doctor["slotTime"] ?? "N/A",
                             address: doctor["address"],
                             about: doctor["about"],
                             state: doctor["state"],

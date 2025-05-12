@@ -25,8 +25,13 @@ class _SignUpFormState extends State<SignUpForm> {
   final _experienceController = TextEditingController();
   final _specializationController = TextEditingController();
   final _locationController = TextEditingController();
+  final _confirmPassController = TextEditingController();
   final _feeController = TextEditingController();
   final _aboutController = TextEditingController();
+  final _accountHolderNameController = TextEditingController();
+  final _ifscCodeController = TextEditingController();
+  //final _bankNameController = TextEditingController();
+  final _bankAccountNumberController = TextEditingController();
   final _degreeController = TextEditingController();
   final _slotTimeController = TextEditingController();
   // final _languageController = TextEditingController();
@@ -36,8 +41,8 @@ class _SignUpFormState extends State<SignUpForm> {
   File? _profileImage;
   File? _aadharImage;
   File? _degreePdf;
-  File? _registrationCertificatePdf;
-  bool _certificateError = true;
+  // File? _registrationCertificatePdf;
+  //bool _certificateError = true;
 
   List<String> _selectedLanguages = [];
   final List<String> _allLanguages = [
@@ -70,6 +75,7 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   // 🆔 Pick Aadhar Image
+  // Check file size before uploading
   Future<void> _pickAadharImage() async {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -87,14 +93,14 @@ class _SignUpFormState extends State<SignUpForm> {
     }
   }
 
-  Future<void> _pickregistrationCertificatePdf() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
-    if (result != null && result.files.single.path != null) {
-      setState(
-          () => _registrationCertificatePdf = File(result.files.single.path!));
-    }
-  }
+  // Future<void> _pickregistrationCertificatePdf() async {
+  //   FilePickerResult? result = await FilePicker.platform
+  //       .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+  //   if (result != null && result.files.single.path != null) {
+  //     setState(
+  //         () => _registrationCertificatePdf = File(result.files.single.path!));
+  //   }
+  // }
 
   // ⬆️ Upload File to Firebase Storage
   Future<String?> _uploadFile(File file, String path) async {
@@ -149,10 +155,8 @@ class _SignUpFormState extends State<SignUpForm> {
           }
 
           // ⬆️ Uploads
-          String? profileUrl,
-              aadharUrl,
-              degreeCertificateUrl,
-              registrationCertificateUrl;
+          String? profileUrl, aadharUrl, degreeCertificateUrl;
+          // registrationCertificateUrl;
           if (_profileImage != null) {
             profileUrl = await _uploadFile(
                 _profileImage!, "${_selectedRole}/${user.uid}/profile.jpg");
@@ -164,12 +168,6 @@ class _SignUpFormState extends State<SignUpForm> {
           if (_degreePdf != null) {
             degreeCertificateUrl = await _uploadFile(_degreePdf!,
                 "${_selectedRole}/${user.uid}/degreeCertificate.pdf");
-          }
-          if (_registrationCertificatePdf != null) {
-            registrationCertificateUrl = await _uploadFile(
-              _registrationCertificatePdf!,
-              "${_selectedRole}/${user.uid}/registrationCertificate.pdf",
-            );
           }
 
           // 🔥 Save user/doctor to Firestore
@@ -194,6 +192,9 @@ class _SignUpFormState extends State<SignUpForm> {
               'location': _locationController.text.trim(),
               'about': _aboutController.text.trim(),
               'state': _stateController.text.trim(),
+              'bankAccountNumber': _bankAccountNumberController.text.trim(),
+              'ifscCode': _ifscCodeController.text.trim(),
+              'accountHolderName': _accountHolderNameController.text.trim(),
               'fee': _feeController.text.trim(),
               'aadharUrl': aadharUrl,
               'degreeCertificateUrl': degreeCertificateUrl,
@@ -598,7 +599,7 @@ class _SignUpFormState extends State<SignUpForm> {
             FormField<File>(
               validator: (value) {
                 if (_aadharImage == null) {
-                  return 'Please upload your Aadhar image';
+                  return 'Please upload aadhar';
                 }
                 return null;
               },
@@ -612,24 +613,19 @@ class _SignUpFormState extends State<SignUpForm> {
                         height: MediaQuery.of(context).size.height * 0.06,
                         child: ElevatedButton.icon(
                           onPressed: () async {
-                            final pickedFile = await ImagePicker().pickImage(
-                              source: ImageSource.gallery,
-                            );
-                            if (pickedFile != null) {
-                              setState(() {
-                                _aadharImage = File(pickedFile.path);
-                              });
+                            await _pickAadharImage();
+                            if (_aadharImage != null) {
                               fieldState
-                                  .didChange(_aadharImage); // ✅ Sync form state
+                                  .didChange(_aadharImage); // ✅ Clear error
 
-                              // Optionally trigger form validation again
+                              // 🔄 Optional revalidate the entire form
                               if (_formKey.currentState != null) {
                                 _formKey.currentState!.validate();
                               }
                             }
                           },
                           icon: const Icon(Icons.image),
-                          label: const Text("Upload Aadhar"),
+                          label: const Text("Upload Aadhar Photo"),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 fieldState.hasError ? Colors.redAccent : null,
@@ -642,7 +638,7 @@ class _SignUpFormState extends State<SignUpForm> {
                   ),
                   if (fieldState.hasError)
                     Padding(
-                      padding: const EdgeInsets.only(top: 5),
+                      padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         fieldState.errorText!,
                         style: const TextStyle(color: Colors.red, fontSize: 12),
@@ -703,6 +699,17 @@ class _SignUpFormState extends State<SignUpForm> {
                                   color: Colors.green),
                           ],
                         ),
+                        // Instruction text below the button
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "* Merge the Degree and Registration Certificate into one PDF and upload it.",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
                         if (fieldState.hasError)
                           const Padding(
                             padding: EdgeInsets.only(top: 8.0),
@@ -716,6 +723,100 @@ class _SignUpFormState extends State<SignUpForm> {
                   ),
                 ],
               ),
+            ),
+
+            Config.spaceMedium,
+            Text(
+              'Bank Details',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Config.spaceSmall,
+            TextFormField(
+              controller: _accountHolderNameController,
+              keyboardType: TextInputType.text,
+              decoration:
+                  const InputDecoration(labelText: 'Account Holder Name'),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Enter Account Holder Name';
+                }
+
+                // Check if the name contains only alphabetic characters and spaces
+                if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+                  return 'Name should only contain alphabets and spaces';
+                }
+
+                // Check if the name length is between 3 and 50 characters
+                if (value.length < 3 || value.length > 50) {
+                  return 'Name must be between 3 and 50 characters';
+                }
+
+                return null;
+              },
+              onChanged: (value) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
+            ),
+            Config.spaceMedium,
+            TextFormField(
+              controller: _bankAccountNumberController,
+              keyboardType: TextInputType.number,
+              decoration:
+                  const InputDecoration(labelText: 'Bank Account Number'),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Enter an Account Number';
+                }
+
+                // Check if the value contains only digits
+                if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                  return 'Account Number should only contain digits';
+                }
+
+                // Check if the length is between 9 and 18 digits
+                if (value.length < 9 || value.length > 18) {
+                  return 'Account Number must be between 9 and 18 digits';
+                }
+
+                return null;
+              },
+              onChanged: (value) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
+            ),
+            Config.spaceMedium,
+            TextFormField(
+              controller:
+                  _ifscCodeController, // You can replace it with a more meaningful variable name
+              keyboardType:
+                  TextInputType.text, // IFSC code is usually in text format
+              decoration: const InputDecoration(labelText: 'IFSC Code'),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Enter a valid IFSC code';
+                }
+
+                // Check if the IFSC code is exactly 11 characters long
+                if (value.length != 11) {
+                  return 'IFSC code must be exactly 11 characters';
+                }
+
+                // Check if the IFSC code contains only uppercase alphabets and numbers
+                if (!RegExp(r'^[A-Z0-9]{11}$').hasMatch(value)) {
+                  return 'IFSC code should contain only uppercase letters and numbers';
+                }
+
+                return null;
+              },
+              onChanged: (value) {
+                if (_formKey.currentState != null) {
+                  _formKey.currentState!.validate();
+                }
+              },
             ),
             Config.spaceMedium,
           ],
@@ -755,6 +856,43 @@ class _SignUpFormState extends State<SignUpForm> {
               }
 
               return null;
+            },
+            onChanged: (value) {
+              if (_formKey.currentState != null) {
+                _formKey.currentState!.validate();
+              }
+            },
+          ),
+
+          Config.spaceMedium,
+
+// Add Confirm Password field
+          TextFormField(
+            controller: _confirmPassController,
+            obscureText: obsecurePass,
+            decoration: InputDecoration(
+              labelText: 'Confirm Password',
+              suffixIcon: IconButton(
+                onPressed: () => setState(() => obsecurePass = !obsecurePass),
+                icon: Icon(
+                    obsecurePass ? Icons.visibility_off : Icons.visibility),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please confirm your password';
+              }
+
+              if (value != _passController.text) {
+                return 'Passwords do not match';
+              }
+
+              return null;
+            },
+            onChanged: (value) {
+              if (_formKey.currentState != null) {
+                _formKey.currentState!.validate();
+              }
             },
           ),
 

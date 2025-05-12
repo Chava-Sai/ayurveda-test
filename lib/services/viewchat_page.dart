@@ -70,7 +70,7 @@ class _ViewchatPage extends State<ViewchatPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             const Text(
-              'Doctor Chats',
+              'Chats',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),

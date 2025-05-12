@@ -23,7 +23,7 @@
 <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
-        android:label="hosp_test"
+        android:label="Kanvy"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

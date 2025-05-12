@@ -59,31 +59,97 @@ class _AppointmentPageState extends State<AppointmentPage> {
       return schedule['status'] == status;
     }).toList();
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(
-          left: 20,
-          top: 20,
-          right: 20,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            const Text(
-              'Appointment Schedule',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.35,
-            ),
-
-            Center(
-                child: const Text(
-              'Coming Soon...',
-              style: TextStyle(fontSize: 21),
-            )),
-          ],
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: 20,
+            top: 20,
+            right: 20,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const Text(
+                'Appointment Schedule',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.05,
+              ),
+              Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        for (FilterStatus filterStatus in FilterStatus.values)
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(
+                                  () {
+                                    if (filterStatus == FilterStatus.upcoming) {
+                                      status = FilterStatus.upcoming;
+                                      _alignment = Alignment.centerLeft;
+                                    } else if (filterStatus ==
+                                        FilterStatus.complete) {
+                                      status = FilterStatus.complete;
+                                      _alignment = Alignment.center;
+                                    } else if (filterStatus ==
+                                        FilterStatus.cancel) {
+                                      status = FilterStatus.cancel;
+                                      _alignment = Alignment.centerRight;
+                                    }
+                                  },
+                                );
+                              },
+                              child: Center(child: Text(filterStatus.name)),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  AnimatedAlign(
+                    alignment: _alignment,
+                    duration: const Duration(
+                      milliseconds: 200,
+                    ),
+                    child: Container(
+                      width: 100,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Config.primaryColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Text(
+                          status.name,
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.27,
+              ),
+              Center(
+                  child: const Text(
+                'Coming Soon...',
+                style: TextStyle(fontSize: 21),
+              )),
+            ],
+          ),
         ),
       ),
     );

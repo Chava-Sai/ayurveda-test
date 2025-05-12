@@ -26,6 +26,8 @@ class _SearchDoctorByIdState extends State<SearchDoctorById> {
   }
 
   Future<void> _searchDoctor() async {
+    FocusScope.of(context).unfocus(); // 👈 Hides the keyboard
+
     final doctorId = _idController.text.trim().toUpperCase();
     if (doctorId.isEmpty) {
       setState(() {

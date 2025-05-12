@@ -3,8 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:hosp_test/utils/config.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,6 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late User? _user;
   String _userName = "User";
   String _profileUrl = "";
+  String _number = "Null";
 
   @override
   void initState() {
@@ -37,6 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           _userName = userDoc['name'] ?? "User";
           _profileUrl = userDoc['profileUrl'] ?? "";
+          _number = userDoc['phone'] ?? "Null";
         });
       }
     }
@@ -121,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Crop Image',
-          toolbarColor: Colors.blue,
+          toolbarColor: Config.primaryColor,
           toolbarWidgetColor: Colors.white,
         ),
         IOSUiSettings(title: 'Crop Image')
@@ -152,18 +155,20 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
-        backgroundColor: Colors.blue,
+        backgroundColor: Config.primaryColor,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(screenWidth * 0.05),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile Photo & Name
               Center(
                 child: Column(
                   children: [
@@ -171,7 +176,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       alignment: Alignment.bottomRight,
                       children: [
                         CircleAvatar(
-                          radius: 70,
+                          radius: screenWidth * 0.17,
                           backgroundImage: _profileUrl.isNotEmpty
                               ? NetworkImage(_profileUrl)
                               : const AssetImage('assets/profile.jpg')
@@ -182,72 +187,41 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: const Icon(Icons.camera_alt, size: 20),
                           color: Colors.white,
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Config.primaryColor,
                             shape: const CircleBorder(),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.03,
-                    ),
-                    Center(
-                      child: Text(
-                        _userName,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    SizedBox(height: screenHeight * 0.03),
+                    Text(
+                      _userName,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.07,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '+91 ${_number}',
+                      style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: screenWidth * 0.045), // Dynamic font size
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
-
-              // Settings Section
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text("Settings",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text("Change Name"),
-                onTap: _changeName,
-              ),
-              ListTile(
-                leading: const Icon(Icons.lock),
-                title: const Text("Change Password"),
-                onTap: _changePassword,
-              ),
-
-              const SizedBox(height: 20),
-
-              // Legal Policy
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text("Legal Policy",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              ListTile(
-                leading: const Icon(Icons.policy),
-                title: const Text("Privacy Policy"),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const Icon(Icons.description),
-                title: const Text("Terms & Conditions"),
-                onTap: () {},
-              ),
-
-              const SizedBox(height: 20),
-
-              // Logout Button
+              SizedBox(height: screenHeight * 0.03),
+              _buildSectionTitle("Settings"),
+              _buildTile(Icons.edit, "Change Name", _changeName),
+              _buildTile(Icons.lock, "Change Password", _changePassword),
+              SizedBox(height: screenHeight * 0.03),
+              _buildSectionTitle("Legal Policy"),
+              _buildTile(Icons.policy, "Privacy Policy", () {}),
+              _buildTile(Icons.description, "Terms & Conditions", () {}),
+              SizedBox(height: screenHeight * 0.03),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.86,
+                width: screenWidth * 0.86,
                 child: ElevatedButton.icon(
                   onPressed: _logout,
                   icon: const Icon(Icons.logout),
@@ -255,12 +229,37 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: EdgeInsets.symmetric(
+                      vertical: screenHeight * 0.015,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTile(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.teal[700]),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
         ),
       ),
     );

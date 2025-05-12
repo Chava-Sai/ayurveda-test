@@ -1198,7 +1198,7 @@ PODS:
   - BoringSSL-GRPC/Implementation (0.0.37):
     - BoringSSL-GRPC/Interface (= 0.0.37)
   - BoringSSL-GRPC/Interface (0.0.37)
-  - cloud_firestore (5.6.6):
+  - cloud_firestore (5.6.7):
     - Firebase/Firestore (= 11.10.0)
     - firebase_core
     - Flutter
@@ -1252,7 +1252,7 @@ PODS:
   - Firebase/Storage (11.10.0):
     - Firebase/CoreOnly
     - FirebaseStorage (~> 11.10.0)
-  - firebase_auth (5.5.2):
+  - firebase_auth (5.5.3):
     - Firebase/Auth (= 11.10.0)
     - firebase_core
     - Flutter
@@ -1263,7 +1263,7 @@ PODS:
     - Firebase/Storage (= 11.10.0)
     - firebase_core
     - Flutter
-  - FirebaseAppCheckInterop (11.10.0)
+  - FirebaseAppCheckInterop (11.12.0)
   - FirebaseAuth (11.10.0):
     - FirebaseAppCheckInterop (~> 11.0)
     - FirebaseAuthInterop (~> 11.0)
@@ -1273,7 +1273,7 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GTMSessionFetcher/Core (< 5.0, >= 3.4)
     - RecaptchaInterop (~> 101.0)
-  - FirebaseAuthInterop (11.10.0)
+  - FirebaseAuthInterop (11.12.0)
   - FirebaseCore (11.10.0):
     - FirebaseCoreInternal (~> 11.10.0)
     - GoogleUtilities/Environment (~> 8.0)
@@ -1302,7 +1302,7 @@ PODS:
     - gRPC-Core (~> 1.69.0)
     - leveldb-library (~> 1.22)
     - nanopb (~> 3.30910.0)
-  - FirebaseSharedSwift (11.10.0)
+  - FirebaseSharedSwift (11.12.0)
   - FirebaseStorage (11.10.0):
     - FirebaseAppCheckInterop (~> 11.0)
     - FirebaseAuthInterop (~> 11.0)
@@ -1311,7 +1311,7 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GTMSessionFetcher/Core (< 5.0, >= 3.4)
   - Flutter (1.0.0)
-  - flutter_callkit_incoming (0.0.1):
+  - flutter_callkit_incoming_yoer (0.0.1):
     - CryptoSwift
     - Flutter
   - flutter_logs (0.0.1):
@@ -1491,9 +1491,9 @@ PODS:
     - Flutter
   - zego_uikit_signaling_plugin (0.0.1):
     - Flutter
-  - zego_zim (2.17.1):
+  - zego_zim (2.20.0):
     - Flutter
-    - ZIM (= 2.17.1)
+    - ZIM (= 2.20.0)
   - zego_zim_audio (1.0.2):
     - Flutter
     - ZIMAudio (= 1.0.2)
@@ -1503,7 +1503,7 @@ PODS:
     - Flutter
     - ZPNs (= 2.6.0)
   - ZegoUIKitReport (0.2.10)
-  - ZIM (2.17.1)
+  - ZIM (2.20.0)
   - ZIMAudio (1.0.2)
   - ZIPFoundation (0.9.19)
   - ZPNs (2.6.0)
@@ -1519,7 +1519,7 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
-  - flutter_callkit_incoming (from `.symlinks/plugins/flutter_callkit_incoming/ios`)
+  - flutter_callkit_incoming_yoer (from `.symlinks/plugins/flutter_callkit_incoming_yoer/ios`)
   - flutter_logs (from `.symlinks/plugins/flutter_logs/ios`)
   - flutter_ringtone_player (from `.symlinks/plugins/flutter_ringtone_player/ios`)
   - flutter_volume_controller (from `.symlinks/plugins/flutter_volume_controller/ios`)
@@ -1601,8 +1601,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_storage/ios"
   Flutter:
     :path: Flutter
-  flutter_callkit_incoming:
-    :path: ".symlinks/plugins/flutter_callkit_incoming/ios"
+  flutter_callkit_incoming_yoer:
+    :path: ".symlinks/plugins/flutter_callkit_incoming_yoer/ios"
   flutter_logs:
     :path: ".symlinks/plugins/flutter_logs/ios"
   flutter_ringtone_player:
@@ -1657,7 +1657,7 @@ SPEC CHECKSUMS:
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
   audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
   BoringSSL-GRPC: dded2a44897e45f28f08ae87a55ee4bcd19bc508
-  cloud_firestore: 07742f115155e19201e77b4cafb155011892d7b7
+  cloud_firestore: b7b3bfffcd2ea3205f612d5602f959a0ec33c7b0
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
@@ -1665,21 +1665,21 @@ SPEC CHECKSUMS:
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Firebase: 1fe1c0a7d9aaea32efe01fbea5f0ebd8d70e53a2
-  firebase_auth: 34c515a8fa76a4ef678ac5ad5cfa3bb3120f5ab5
+  firebase_auth: 83bf106e5ac670dd3a0af27a86be6cba16a85723
   firebase_core: 2d4534e7b489907dcede540c835b48981d890943
   firebase_storage: ce9dee18f1cc73129457d861ae3322656ec41a99
-  FirebaseAppCheckInterop: 9664c858489710f682766ef54e2b6741d3b62070
+  FirebaseAppCheckInterop: 73b173e5ec45192e2d522ad43f526a82ad10b852
   FirebaseAuth: c4146bdfdc87329f9962babd24dae89373f49a32
-  FirebaseAuthInterop: 01a804fb074424fd58b92dd50dd0272277199356
+  FirebaseAuthInterop: b583210c039a60ed3f1e48865e1f3da44a796595
   FirebaseCore: 8344daef5e2661eb004b177488d6f9f0f24251b7
   FirebaseCoreExtension: 6f357679327f3614e995dc7cf3f2d600bdc774ac
   FirebaseCoreInternal: ef4505d2afb1d0ebbc33162cb3795382904b5679
   FirebaseFirestore: 3f1488ff7739cb3c5d10e572bc4e9fcd8e8cb4ac
   FirebaseFirestoreInternal: 97a2bb5f16951c77753c860d3519379702ab6f8a
-  FirebaseSharedSwift: 1baacae75939499b5def867cbe34129464536a38
+  FirebaseSharedSwift: d2475748a2d2a36242ed13baa34b2acda846c925
   FirebaseStorage: e83d1b9c8a5318d46ccfb2955f0d98095e0bf598
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_callkit_incoming: cb8138af67cda6dd981f7101a5d709003af21502
+  flutter_callkit_incoming_yoer: 83891ececea86d92a7430d1bae162b6c0934c954
   flutter_logs: 30a36079651dcdfb260dbff875bf882bbbcaa22e
   flutter_ringtone_player: a77c42464250845611eaa44c27e8714acc800138
   flutter_volume_controller: c2be490cb0487e8b88d0d9fc2b7e1c139a4ebccb
@@ -1705,18 +1705,18 @@ SPEC CHECKSUMS:
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   vibration: 69774ad57825b11c951ee4c46155f455d7a592ce
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
-  wakelock_plus: 04623e3f525556020ebd4034310f20fe7fda8b49
+  wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
   zego_callkit: 8e3bc2e9fc6895cff1b27841b1de1100344d2613
   zego_express_engine: 26f82d16f306eb2522e8329c769f835a997f5338
   zego_uikit: 0843069d9d4d0e4845abf0ea9b24efa95c1760fa
   zego_uikit_prebuilt_call: 7fe09774f68ec5344fd16378ff2d3bc2de36c6f8
   zego_uikit_signaling_plugin: 89c53a021d449903c6e6a0642383bb7e5791e46e
-  zego_zim: 52cc084a83dc165903f1f7f90977825926d12bd2
+  zego_zim: 3338aec140fd534f263355b33e2fabb16220013c
   zego_zim_audio: 93e7b1359ab565cbdf8bc01ef33fb8f2492095cd
   zego_zimkit: eb898bea1f8b43a1cb814eaab39617ef679b6917
   zego_zpns: e2ef9b972e9b6be00b78b32b71c550c426584752
   ZegoUIKitReport: a993f7ccc5d243998a7e601a60e16fcd6c084417
-  ZIM: f3ac70a6ddf0e2b70f2a2de29048ab67ce2875f6
+  ZIM: 1376cbc14e92c31425d91a5bd0874c0b501e4e76
   ZIMAudio: 8e50c9cffb9a6828294c27828db896f8ef388082
   ZIPFoundation: b8c29ea7ae353b309bc810586181fd073cb3312c
   ZPNs: 73bad0046a74e37315201053f9a0e7ac625d9436

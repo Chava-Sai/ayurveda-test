@@ -64,7 +64,10 @@ class _MainLayoutState extends State<MainLayout> {
             label: 'Messages',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.solidCalendarCheck),
+            icon: Icon(
+              Icons.calendar_month,
+              size: 30,
+            ),
             label: 'Appointments',
           ),
         ],
