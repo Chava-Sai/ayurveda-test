@@ -151,35 +151,35 @@ class _DoctorDetailsState extends State<DoctorDetails> {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
               ),
-              // Padding(
-              //   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              //   child: Button(
-              //     width: double.infinity,
-              //     title: 'Book Appointment',
-              //     onPressed: isSlotActive
-              //         ? () {
-              //             Navigator.push(
-              //               context,
-              //               MaterialPageRoute(
-              //                 builder: (context) => CallScreen(
-              //                     doctorId: doctorId, doctorName: name),
-              //               ),
-              //             );
-              //           }
-              //         : null,
-              //     disable: !isSlotActive,
-              //   ),
-              // ),
-              // if (!isSlotActive)
-              //   Padding(
-              //     padding: EdgeInsets.all(screenWidth * 0.03),
-              //     child: Text(
-              //       "Booking is allowed only during the available slot time.",
-              //       style: TextStyle(
-              //           color: Colors.red, fontSize: screenWidth * 0.03),
-              //       textAlign: TextAlign.center,
-              //     ),
-              //   ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                child: Button(
+                  width: double.infinity,
+                  title: 'Book Appointment',
+                  onPressed: isSlotActive
+                      ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CallScreen(
+                                  doctorId: doctorId, doctorName: name),
+                            ),
+                          );
+                        }
+                      : null,
+                  disable: !isSlotActive,
+                ),
+              ),
+              if (!isSlotActive)
+                Padding(
+                  padding: EdgeInsets.all(screenWidth * 0.03),
+                  child: Text(
+                    "Booking is allowed only during the available slot time.",
+                    style: TextStyle(
+                        color: Colors.red, fontSize: screenWidth * 0.03),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
             ],
           ),
         ),

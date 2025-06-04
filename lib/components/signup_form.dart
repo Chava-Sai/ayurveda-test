@@ -128,35 +128,23 @@ class _SignUpFormState extends State<SignUpForm> {
         if (user != null) {
           await user.sendEmailVerification();
 
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const EmailSent()),
-            );
-          }
-
-          // 🌟 Generate unique doctorId like KH01, KH02...
+          // 🌟 Generate doctorId (KH01, KH02...)
           String? doctorId;
           if (_selectedRole == 'Doctor') {
             final counterRef =
                 _firestore.collection('metadata').doc('doctor_counter');
             final counterSnap = await counterRef.get();
 
-            int currentCount = 0;
-            if (counterSnap.exists &&
-                counterSnap.data()!.containsKey('count')) {
-              currentCount = counterSnap['count'];
-            }
-
-            currentCount += 1;
+            int currentCount = (counterSnap.data()?['count'] ?? 0) + 1;
             doctorId = 'KH${currentCount.toString().padLeft(2, '0')}';
 
-            await counterRef.set({'count': currentCount}); // ✅ Update counter
+            await counterRef
+                .set({'count': currentCount}, SetOptions(merge: true));
+            print("Doctor counter updated: $currentCount");
           }
 
-          // ⬆️ Uploads
+          // ⬆️ Upload files (profile, Aadhar, degree)
           String? profileUrl, aadharUrl, degreeCertificateUrl;
-          // registrationCertificateUrl;
           if (_profileImage != null) {
             profileUrl = await _uploadFile(
                 _profileImage!, "${_selectedRole}/${user.uid}/profile.jpg");
@@ -166,14 +154,13 @@ class _SignUpFormState extends State<SignUpForm> {
                 _aadharImage!, "${_selectedRole}/${user.uid}/aadhar.jpg");
           }
           if (_degreePdf != null) {
-            degreeCertificateUrl = await _uploadFile(_degreePdf!,
-                "${_selectedRole}/${user.uid}/degreeCertificate.pdf");
+            degreeCertificateUrl = await _uploadFile(
+                _degreePdf!, "${_selectedRole}/${user.uid}/degree.pdf");
           }
 
-          // 🔥 Save user/doctor to Firestore
+          // 🔥 Save to Firestore
           String collection = _selectedRole == "Doctor" ? "doctors" : "users";
-
-          await _firestore.collection(collection).doc(user.uid).set({
+          Map<String, dynamic> userData = {
             'uid': user.uid,
             'email': _emailController.text.trim(),
             'name': _nameController.text.trim(),
@@ -182,8 +169,11 @@ class _SignUpFormState extends State<SignUpForm> {
             'profileUrl': profileUrl,
             'createdAt': FieldValue.serverTimestamp(),
             'status': _selectedRole == 'Doctor' ? 'pending' : 'approved',
-            if (_selectedRole == 'Doctor') ...{
-              'doctorId': doctorId, // ✅ Custom ID stored here
+          };
+
+          if (_selectedRole == 'Doctor') {
+            userData.addAll({
+              'doctorId': doctorId,
               'degree': _degreeController.text.trim(),
               'experience': _experienceController.text.trim(),
               'specialization': _specializationController.text.trim(),
@@ -198,12 +188,25 @@ class _SignUpFormState extends State<SignUpForm> {
               'fee': _feeController.text.trim(),
               'aadharUrl': aadharUrl,
               'degreeCertificateUrl': degreeCertificateUrl,
-            }
-          });
+            });
+          }
 
-          await _auth.signOut();
+          print("Saving to $collection with ID: ${user.uid}");
+          await _firestore.collection(collection).doc(user.uid).set(userData);
+          print("Data saved successfully!");
+
+          // Navigate after everything is done
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const EmailSent()),
+            );
+          }
+
+          await _auth.signOut(); // Consider if you really want to sign out here
         }
       } catch (e) {
+        print("Error during signup: $e");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${e.toString()}')),

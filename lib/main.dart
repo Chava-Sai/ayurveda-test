@@ -6,6 +6,7 @@ import 'package:hosp_test/screens/doctor_doctordetail.dart';
 import 'package:hosp_test/screens/dotor_details.dart';
 import 'package:hosp_test/screens/email_link.dart';
 import 'package:hosp_test/screens/success_booked.dart';
+import 'package:hosp_test/services/call_service.dart';
 import 'package:hosp_test/utils/config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -90,6 +91,8 @@ class _SplashScreenCheckState extends State<SplashScreenCheck> {
     _checkUserStatus();
   }
 
+// In your main.dart, modify the _checkUserStatus method in _SplashScreenCheckState:
+
   Future<void> _checkUserStatus() async {
     await Future.delayed(const Duration(seconds: 1)); // splash wait
 
@@ -127,6 +130,12 @@ class _SplashScreenCheckState extends State<SplashScreenCheck> {
           Navigator.pushReplacementNamed(context, 'start');
           return;
         }
+
+        // Initialize call service with current user info
+        await CallService.initializeCallService(
+          userID: user.uid,
+          userName: userDoc['name'] ?? 'User',
+        );
 
         // ✅ Navigate to dashboard
         if (userDoc.reference.parent.id == 'doctors') {

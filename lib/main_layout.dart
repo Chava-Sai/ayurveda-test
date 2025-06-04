@@ -65,10 +65,10 @@ class _MainLayoutState extends State<MainLayout> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.calendar_month,
+              Icons.store_mall_directory_sharp,
               size: 30,
             ),
-            label: 'Appointments',
+            label: 'Stores',
           ),
         ],
       ),

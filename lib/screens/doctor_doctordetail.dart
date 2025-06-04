@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hosp_test/components/button.dart';
 //import 'package:hosp_test/components/button.dart';
 import 'package:hosp_test/components/custom_appbar.dart';
+import 'package:hosp_test/screens/call_page.dart';
 //import 'package:hosp_test/screens/call_page.dart';
 import 'package:hosp_test/utils/config.dart';
 
@@ -151,25 +153,25 @@ class _doctorDoctorDetailsState extends State<doctorDoctorDetails> {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
               ),
-              // Padding(
-              //   padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              //   child: Button(
-              //     width: double.infinity,
-              //     title: 'Book Appointment',
-              //     onPressed: isSlotActive
-              //         ? () {
-              //             Navigator.push(
-              //               context,
-              //               MaterialPageRoute(
-              //                 builder: (context) => CallScreen(
-              //                     doctorId: doctorId, doctorName: name),
-              //               ),
-              //             );
-              //           }
-              //         : null,
-              //     disable: !isSlotActive,
-              //   ),
-              // ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                child: Button(
+                  width: double.infinity,
+                  title: 'Book Appointment',
+                  onPressed: isSlotActive
+                      ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CallScreen(
+                                  doctorId: doctorId, doctorName: name),
+                            ),
+                          );
+                        }
+                      : null,
+                  disable: !isSlotActive,
+                ),
+              ),
               if (!isSlotActive)
                 Padding(
                   padding: EdgeInsets.all(screenWidth * 0.03),
