@@ -12,8 +12,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-//import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
-//import 'package:zego_zimkit/zego_zimkit.dart';
+import 'package:zego_zimkit/zego_zimkit.dart';
 import 'firebase_options.dart';
 import 'package:hosp_test/doctor_main_layout.dart';
 
@@ -25,7 +24,12 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
+  //ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
+  ZIMKit().init(
+    appID: 450063970, // Your ZEGO app ID
+    appSign:
+        "6b93e16d5b95b00b3851d75628105c19c7f7819bc0ca70b29b721e85ac7cbf06", // Your ZEGO app sign
+  );
 
   runApp(const SplashWrapper());
 }

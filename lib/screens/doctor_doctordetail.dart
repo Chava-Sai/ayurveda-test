@@ -1,9 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hosp_test/chat/direct_chat.dart';
+import 'package:hosp_test/chat/home_screen.dart';
+import 'package:hosp_test/chat/login.dart';
 import 'package:hosp_test/components/button.dart';
 //import 'package:hosp_test/components/button.dart';
 import 'package:hosp_test/components/custom_appbar.dart';
 import 'package:hosp_test/screens/call_page.dart';
+import 'package:hosp_test/screens/doctor_status_button.dart';
+import 'package:hosp_test/services/final_call.dart';
 //import 'package:hosp_test/screens/call_page.dart';
 import 'package:hosp_test/utils/config.dart';
 
@@ -17,6 +23,7 @@ class doctorDoctorDetails extends StatefulWidget {
 class _doctorDoctorDetailsState extends State<doctorDoctorDetails> {
   bool isFav = false;
   bool isSlotActive = false;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   late String name;
   late String experience;
@@ -28,8 +35,10 @@ class _doctorDoctorDetailsState extends State<doctorDoctorDetails> {
   late String doctorId;
   late String slotTime;
   late String state;
+  late String doctorStatus;
   late String specialization;
   late String profileUrl;
+  bool _isLoading = true;
 
   @override
   void didChangeDependencies() {
@@ -47,15 +56,34 @@ class _doctorDoctorDetailsState extends State<doctorDoctorDetails> {
     state = args['state']?.toString() ?? '';
     doctorId = args['doctorId']?.toString() ?? '';
     fee = args['fee']?.toString() ?? '';
+    doctorStatus = args['working']?.toString() ?? 'available';
     location = args['location']?.toString() ?? '';
     profileUrl = args['profileUrl']?.toString() ?? '';
 
     isSlotActive = isCurrentTimeWithinSlot(slotTime);
   }
 
+  Future<void> _loadDoctorStatus() async {
+    try {
+      final doc = await _firestore.collection('doctors').doc(doctorId).get();
+      if (doc.exists) {
+        setState(() {
+          doctorStatus = doc['working'] ?? 'available';
+          _isLoading = false;
+        });
+      } else {
+        _isLoading = false;
+      }
+    } catch (e) {
+      debugPrint('Error loading doctor status: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _refreshData() async {
     setState(() {
       isSlotActive = isCurrentTimeWithinSlot(slotTime);
+      _loadDoctorStatus();
     });
   }
 
@@ -113,79 +141,161 @@ class _doctorDoctorDetailsState extends State<doctorDoctorDetails> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        appTitle: 'Doctor Details',
-        icon: const FaIcon(Icons.arrow_back_ios),
-        actions: [
-          IconButton(
-            onPressed: () => setState(() => isFav = !isFav),
-            icon: FaIcon(
-              isFav ? Icons.favorite_rounded : Icons.favorite_outline,
-              color: Colors.red,
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _refreshData,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: <Widget>[
-              AboutDoctor(
-                name: name,
-                experience: experience,
-                degree: degree,
-                profileUrl: profileUrl,
-                location: location,
-                doctorId: doctorId,
-                userId: userId,
-                state: state,
-                specialization: specialization,
-                screenWidth: screenWidth,
-              ),
-              DetailBody(
-                experience: experience,
-                about: about,
-                fee: fee,
-                slotTime: formatSlotTime(slotTime),
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-              ),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _firestore.collection('doctors').doc(doctorId).snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final docData = snapshot.data!.data() as Map<String, dynamic>;
+        doctorStatus = docData['working'] ?? 'available';
+
+        return Scaffold(
+          appBar: CustomAppBar(
+            appTitle: 'Doctor Details',
+            icon: const FaIcon(Icons.arrow_back_ios),
+            actions: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: Button(
-                  width: double.infinity,
-                  title: 'Book Appointment',
-                  onPressed: isSlotActive
-                      ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CallScreen(
-                                  doctorId: doctorId, doctorName: name),
-                            ),
-                          );
-                        }
-                      : null,
-                  disable: !isSlotActive,
-                ),
+                padding: const EdgeInsets.only(
+                    right: 8.0), // or EdgeInsets.symmetric(horizontal: 8)
+                child: DoctorStatusButton(doctorId: doctorId),
               ),
-              if (!isSlotActive)
-                Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.03),
-                  child: Text(
-                    "Booking is allowed only during the available slot time.",
-                    style: TextStyle(
-                        color: Colors.red, fontSize: screenWidth * 0.03),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
             ],
           ),
-        ),
-      ),
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _refreshData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: <Widget>[
+                  AboutDoctor(
+                    name: name,
+                    experience: experience,
+                    degree: degree,
+                    profileUrl: profileUrl,
+                    location: location,
+                    doctorId: doctorId,
+                    userId: userId,
+                    state: state,
+                    specialization: specialization,
+                    screenWidth: screenWidth,
+                  ),
+                  DetailBody(
+                    experience: experience,
+                    about: about,
+                    fee: fee,
+                    slotTime: formatSlotTime(slotTime),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                  ),
+                  Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.05),
+                        child: Row(
+                          children: [
+                            // Chat Button
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    EdgeInsets.only(right: screenWidth * 0.02),
+                                child: Button(
+                                  width: double.infinity,
+                                  title: 'Chat',
+                                  onPressed: (isSlotActive &&
+                                          doctorStatus == 'available')
+                                      ? () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  AutoDoctorChatScreen(
+                                                      doctorId: doctorId),
+                                            ),
+                                          );
+                                        }
+                                      : null,
+                                  disable: !(isSlotActive &&
+                                      doctorStatus == 'available'),
+                                ),
+                              ),
+                            ),
+                            // Video Call Button
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    EdgeInsets.only(left: screenWidth * 0.02),
+                                child: Button(
+                                  width: double.infinity,
+                                  title: 'Video Call',
+                                  onPressed: (isSlotActive &&
+                                          doctorStatus == 'available')
+                                      ? () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => CallScreen(
+                                                  doctorId: doctorId,
+                                                  doctorName: name),
+                                            ),
+                                          );
+                                        }
+                                      : null,
+                                  disable: !(isSlotActive &&
+                                      doctorStatus == 'available'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Status Message
+                      Padding(
+                        padding: EdgeInsets.all(screenWidth * 0.03),
+                        child: Builder(
+                          builder: (context) {
+                            if (!isSlotActive) {
+                              return Text(
+                                "Chat and Video Call are allowed only during the available slot time.",
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: screenWidth * 0.03),
+                                textAlign: TextAlign.center,
+                              );
+                            } else if (doctorStatus == 'offline') {
+                              return Text(
+                                "Doctor is currently offline. Please try again later.",
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: screenWidth * 0.03),
+                                textAlign: TextAlign.center,
+                              );
+                            } else if (doctorStatus == 'busy') {
+                              return Text(
+                                "Doctor is currently busy. Please try again later.",
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: screenWidth * 0.03),
+                                textAlign: TextAlign.center,
+                              );
+                            }
+
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

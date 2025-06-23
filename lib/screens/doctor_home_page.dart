@@ -116,7 +116,7 @@ class _HomePageState extends State<doctorHomePage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
- //   final screenHeight = MediaQuery.of(context).size.height;
+    //   final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _refreshData,
@@ -180,11 +180,38 @@ class _HomePageState extends State<doctorHomePage> {
                                         title: const Text("Logout",
                                             style:
                                                 TextStyle(color: Colors.red)),
-                                        onTap: () {
-                                          FirebaseAuth.instance.signOut();
-                                          Navigator.pop(context);
-                                          Navigator.pushReplacementNamed(
-                                              context, 'login');
+                                        onTap: () async {
+                                          // Get current user
+                                          final user =
+                                              FirebaseAuth.instance.currentUser;
+
+                                          // Check if user is a doctor before signing out
+                                          if (user != null) {
+                                            final doctorDoc =
+                                                await FirebaseFirestore.instance
+                                                    .collection('doctors')
+                                                    .doc(user.uid)
+                                                    .get();
+
+                                            // If user is a doctor, update status to offline
+                                            if (doctorDoc.exists) {
+                                              await FirebaseFirestore.instance
+                                                  .collection('doctors')
+                                                  .doc(user.uid)
+                                                  .update(
+                                                      {'working': 'offline'});
+                                            }
+                                          }
+
+                                          // Perform logout
+                                          await FirebaseAuth.instance.signOut();
+
+                                          // Navigate to login screen
+                                          if (mounted) {
+                                            Navigator.pop(context);
+                                            Navigator.pushReplacementNamed(
+                                                context, 'login');
+                                          }
                                         },
                                       ),
                                     ],

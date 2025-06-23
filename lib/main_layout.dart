@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hosp_test/chat/login.dart';
 import 'package:hosp_test/components/searchby_id.dart';
 import 'package:hosp_test/screens/appointment_page.dart';
 import 'package:hosp_test/screens/user_home_page.dart';
@@ -28,7 +29,7 @@ class _MainLayoutState extends State<MainLayout> {
         children: const <Widget>[
           UserHomePage(),
           SearchDoctorById(),
-          ViewchatPage(),
+          ChatWrapper(), // Assuming this is the chat home page
           AppointmentPage(),
         ],
       ),

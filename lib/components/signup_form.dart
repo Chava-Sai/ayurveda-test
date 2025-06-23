@@ -188,6 +188,7 @@ class _SignUpFormState extends State<SignUpForm> {
               'fee': _feeController.text.trim(),
               'aadharUrl': aadharUrl,
               'degreeCertificateUrl': degreeCertificateUrl,
+              'working': 'offline',
             });
           }
 

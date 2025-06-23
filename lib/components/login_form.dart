@@ -106,10 +106,17 @@ class _LoginFormState extends State<LoginForm> {
             return;
           }
 
-          await _firestore
-              .collection(actualRole == 'Doctor' ? 'doctors' : 'users')
-              .doc(user.uid)
-              .update({'lastLogin': FieldValue.serverTimestamp()});
+          // Update last login and working status (for doctors)
+          if (actualRole == 'Doctor') {
+            await _firestore.collection('doctors').doc(user.uid).update({
+              'lastLogin': FieldValue.serverTimestamp(),
+              'working': 'available', // Set status to available on login
+            });
+          } else {
+            await _firestore.collection('users').doc(user.uid).update({
+              'lastLogin': FieldValue.serverTimestamp(),
+            });
+          }
 
           if (mounted) {
             Navigator.pushReplacement(
